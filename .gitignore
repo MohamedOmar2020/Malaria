@@ -1,0 +1,6 @@
+.Rprofile
+Data/
+Malaria.Rproj
+Objs/
+renv/
+renv.lock
