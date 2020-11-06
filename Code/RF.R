@@ -83,23 +83,24 @@ plot(RF_Agnostic)
 
 ## RandomForest calculates an importance measures for each variable.
 rf_importances <- randomForest::importance(RF_Agnostic, scale=T)
-
+rf_importances <- rf_importances[order(rf_importances[,"MeanDecreaseGini"], decreasing = T), ]
+rf_importances <- rf_importances[rf_importances[,"MeanDecreaseGini"] != 0, ]
 
 ## Create a representation of the top 30 variables categorized by importance.
-#png("./Figs/RF/RF_varImp_Agnostic.png", width = 2000, height = 2000, res = 300)
+png("./Figs/RF_varImp.png", width = 2000, height = 2000, res = 300)
 varImpPlot(RF_Agnostic, type=2, n.var=30, scale=FALSE, main="Variable Importance (Gini) for top 30 predictors")
-#dev.off()
+dev.off()
 
 ## An MDS plot provides a sense of the separation of classes.
-#png("./Figs/RF/MDS_Agnostic.png", width = 2000, height = 2000, res = 300)
-#target_labels=as.vector(target)
-#MDSplot(RF_Agnostic, target, k=2, pch=target_labels, palette=c("red", "blue", "green"), main="MDS plot")
-#dev.off()
+png("./Figs/MDS_Agnostic.png", width = 2000, height = 2000, res = 300)
+target_labels=as.vector(target)
+MDSplot(RF_Agnostic, target, k=2, pch=target_labels, palette=c("red", "blue", "green"), main="MDS plot")
+dev.off()
 
 
 # ROC curve in training data
 train_pred_votes_Agnostic <- predict(RF_Agnostic, newdata = predictor_data, type = "vote")
-roc(usedTrainGroup, train_pred_votes_Agnostic[,2], plot = F, print.auc=TRUE, levels = c("NoProgression", "Progression"), direction = "<", col="blue", lwd=2, grid=TRUE)
+#roc(usedTrainGroup, train_pred_votes_Agnostic[,2], plot = F, print.auc=TRUE, levels = c("NoProgression", "Progression"), direction = "<", col="blue", lwd=2, grid=TRUE)
 
 ### Predict in the training data
 
@@ -140,13 +141,69 @@ MCC_Test
 ## ROC curve and AUC
 roc.multiTest <- multiclass.roc(usedTestGroup, RF_predictions_votes_Agnostic, plot = T, print.auc = TRUE, levels = c("control", "nonCerebral", "cerebral"), col = "blue", grid = TRUE)
 
-rs <- roc.multiTest[['rocs']]
-plot.roc(rs[[3]][[1]])
-sapply(1:length(rs),function(i) lines.roc(rs[[i]][[i]],col=i))
-#########
-## Save RF classifier
-save(RF_Agnostic, file = "./Objs/RF/RF_Classifier_Agnostic")
+# rs <- roc.multiTest[['rocs']]
+# plot.roc(rs[[3]][[1]])
+# sapply(1:length(rs),function(i) lines.roc(rs[[i]][[i]],col=i))
 
-## Save RF importances
-save(rf_importances, file = "./Objs/RF/RF_Importance_Agnostic")
+#########
+## Using multiROC package
+library(multiROC)
+library(tidyverse)
+library(dummies)
+library(ggplot2)
+
+
+true_label <- dummy(usedTestGroup, sep = ".")
+true_label <- data.frame(true_label)
+colnames(true_label) <- gsub(".*?\\.", "", colnames(true_label))
+colnames(true_label) <- paste(colnames(true_label), "_true")
+final_df <- cbind(true_label, RF_predictions_votes_Agnostic)
+colnames(final_df)[c(4,5,6)] <- paste(colnames(final_df)[c(4,5,6)], "_pred_RF")
+
+
+roc_res <- multi_roc(final_df, force_diag=T)
+plot_roc_df <- plot_roc_data(roc_res)
+
+png(filename = "./Figs/MultiROC_TestingData.png", width = 2000, height = 2000, res = 300)
+ggplot(plot_roc_df, aes(x = 1-Specificity, y=Sensitivity)) +
+  geom_path(aes(color = Group, linetype=Method), size=1.5) +
+  geom_segment(aes(x = 0, y = 0, xend = 1, yend = 1), 
+               colour='grey', linetype = 'dotdash') +
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5), 
+        legend.justification=c(1, 0), legend.position=c(.95, .05),
+        legend.title=element_blank(), 
+        legend.background = element_rect(fill=NULL, size=0.5, 
+                                         linetype="solid", colour ="black"))
+
+dev.off()
+
+
+pr_res <- multi_pr(final_df, force_diag=T)
+plot_pr_df <- plot_pr_data(pr_res)
+
+png(filename = "./Figs/MultiPRC_TestingData.png", width = 2000, height = 2000, res = 300)
+ggplot(plot_pr_df, aes(x=Recall, y=Precision)) + 
+  geom_path(aes(color = Group, linetype=Method), size=1.5) + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5), 
+        legend.justification=c(1, 0), legend.position=c(.95, .05),
+        legend.title=element_blank(), 
+        legend.background = element_rect(fill=NULL, size=0.5, 
+                                         linetype="solid", colour ="black"))
+dev.off()
+
+
+################
+## Look at the results closly
+unlist(roc_res$AUC)  # Each class vs the others + macro + micro
+
+
+## With CIs
+roc_auc_with_ci_res <- roc_auc_with_ci(final_df, conf= 0.95, type='basic', R = 100)
+roc_auc_with_ci_res
+
+
+
+
 
