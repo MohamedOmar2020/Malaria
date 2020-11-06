@@ -2,7 +2,8 @@
 ### Mohamed Omar
 ### November 5, 2020
 ### GOAL: Creating a rondom forest classifier for Malaria (control vs nonCerebral vs Cerebral)
-### Using: ALL genes (Agnostic)
+### Using: ALL genes 
+## GSE1124 out
 #################################################################################
 
 # Clean the work space
@@ -20,23 +21,23 @@ library(mltools)
 
 
 ## Load the data
-load("./Objs/MalariaDataGood.rda")
+load("./Objs/MalariaDataGood_GSE1124Out.rda")
 #load("./Objs/Correlation/RGenes.rda")
 
 
 
 ### Normalization
-usedTrainMat <- normalizeBetweenArrays(mixTrainMat, method = "quantile")
-usedTestMat <- normalizeBetweenArrays(mixTestMat, method = "quantile")
+usedTrainMat <- normalizeBetweenArrays(trainMat, method = "quantile")
+usedTestMat <- normalizeBetweenArrays(testMat, method = "quantile")
 
 ### Associated groups
-usedTrainGroup <- mixTrainGroup
-usedTestGroup <- mixTestGroup
+usedTrainGroup <- trainGroup
+usedTestGroup <- testGroup
 
-#names(usedTrainGroup) <- colnames(usedTrainMat)
+names(usedTrainGroup) <- colnames(usedTrainMat)
 all(names(usedTrainGroup) == colnames(usedTrainMat))
 
-#names(usedTestGroup) <- colnames(usedTestMat)
+names(usedTestGroup) <- colnames(usedTestMat)
 all(names(usedTestGroup) ==colnames(usedTestMat))
 
 #########
@@ -84,15 +85,19 @@ plot(RF_Agnostic)
 ## RandomForest calculates an importance measures for each variable.
 rf_importances <- randomForest::importance(RF_Agnostic, scale=T)
 rf_importances <- rf_importances[order(rf_importances[,"MeanDecreaseGini"], decreasing = T), ]
+# Save the top 50 genes
+ImportantGns_GSE1124Out <- rownames(rf_importances)[1:50]
+save(ImportantGns_GSE1124Out, file = "./Objs/ImportantGns_GSE1124Out.rda")
+
 rf_importances <- rf_importances[rf_importances[,"MeanDecreaseGini"] != 0, ]
 
 ## Create a representation of the top 30 variables categorized by importance.
-png("./Figs/RF_varImp.png", width = 2000, height = 2000, res = 300)
+png("./Figs/RF_varImp_GSE1124Out.png", width = 2000, height = 2000, res = 300)
 varImpPlot(RF_Agnostic, type=2, n.var=30, scale=FALSE, main="Variable Importance (Gini) for top 30 predictors")
 dev.off()
 
 ## An MDS plot provides a sense of the separation of classes.
-png("./Figs/MDS_Agnostic.png", width = 2000, height = 2000, res = 300)
+png("./Figs/MDS_GSE1124Out.png", width = 2000, height = 2000, res = 300)
 target_labels=as.vector(target)
 MDSplot(RF_Agnostic, target, k=2, pch=target_labels, palette=c("red", "blue", "green"), main="MDS plot")
 dev.off()
@@ -164,7 +169,7 @@ colnames(final_df)[c(4,5,6)] <- paste(colnames(final_df)[c(4,5,6)], "_pred_RF")
 roc_res <- multi_roc(final_df, force_diag=T)
 plot_roc_df <- plot_roc_data(roc_res)
 
-png(filename = "./Figs/MultiROC_TestingData.png", width = 2000, height = 2000, res = 300)
+png(filename = "./Figs/MultiROC_TestingData_GSE1124Out.png", width = 2000, height = 2000, res = 300)
 ggplot(plot_roc_df, aes(x = 1-Specificity, y=Sensitivity)) +
   geom_path(aes(color = Group, linetype=Method), size=1.5) +
   geom_segment(aes(x = 0, y = 0, xend = 1, yend = 1), 
@@ -182,7 +187,7 @@ dev.off()
 pr_res <- multi_pr(final_df, force_diag=T)
 plot_pr_df <- plot_pr_data(pr_res)
 
-png(filename = "./Figs/MultiPRC_TestingData.png", width = 2000, height = 2000, res = 300)
+png(filename = "./Figs/MultiPRC_TestingData_GSE1124Out.png", width = 2000, height = 2000, res = 300)
 ggplot(plot_pr_df, aes(x=Recall, y=Precision)) + 
   geom_path(aes(color = Group, linetype=Method), size=1.5) + 
   theme_bw() + 
@@ -197,13 +202,9 @@ dev.off()
 ################
 ## Look at the results closly
 unlist(roc_res$AUC)  # Each class vs the others + macro + micro
-
+unlist(pr_res$AUC)
 
 ## With CIs
 roc_auc_with_ci_res <- roc_auc_with_ci(final_df, conf= 0.95, type='basic', R = 100)
 roc_auc_with_ci_res
-
-
-
-
 
