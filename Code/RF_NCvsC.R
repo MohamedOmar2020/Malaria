@@ -20,7 +20,7 @@ library(mltools)
 
 
 ## Load the data
-load("./Objs/MalariaDataGood.rda")
+load("./Objs/MalariaDataGood_NCvsC.rda")
 #load("./Objs/Correlation/RGenes.rda")
 
 
@@ -73,11 +73,11 @@ sampsizes <- rep(min_size,num_classes)
 
 # Tunning RF model (to find the best mtry)
 set.seed(333)
-tuneRF(x=predictor_data, y=target, plot = TRUE, improve = 0.01, ntreeTry = 1000, proximity = TRUE, sampsize = sampsizes, na.action = na.omit)
+tuneRF(x=predictor_data, y = target, plot = TRUE, improve = 0.01, ntreeTry = 1000, proximity = TRUE, sampsize = sampsizes, na.action = na.omit)
 
 ## Ntrees = 500, mtry = 400
 set.seed(333)  
-RF_Agnostic <- randomForest(x =predictor_data, y=target, importance = TRUE, ntree = 1000, mtry =25 ,proximity=TRUE, na.action = na.omit, sampsize = sampsizes)
+RF_Agnostic <- randomForest(x =predictor_data, y=target, importance = TRUE, ntree = 1000, mtry = 13 ,proximity=TRUE, na.action = na.omit, sampsize = sampsizes)
 print(RF_Agnostic)
 plot(RF_Agnostic)
 
@@ -89,12 +89,12 @@ rf_importances <- rf_importances[order(rf_importances[,"MeanDecreaseGini"], decr
 rf_importances <- rf_importances[rf_importances[,"MeanDecreaseGini"] != 0, ]
 
 ## Create a representation of the top 30 variables categorized by importance.
-png("./Figs/RF_varImp.png", width = 2000, height = 2000, res = 300)
+png("./Figs/RF_varImp_NCvsC.png", width = 2000, height = 2000, res = 300)
 varImpPlot(RF_Agnostic, type=2, n.var=30, scale=FALSE, main="Variable Importance (Gini) for top 30 predictors")
 dev.off()
 
 ## An MDS plot provides a sense of the separation of classes.
-png("./Figs/MDS_Training.png", width = 2000, height = 2000, res = 300)
+png("./Figs/MDS_Training_NCvsC.png", width = 2000, height = 2000, res = 300)
 target_labels=as.vector(target)
 MDSplot(RF_Agnostic, target, k=2, pch=target_labels, palette=c("red", "blue", "green"), main="MDS plot")
 dev.off()
@@ -102,7 +102,7 @@ dev.off()
 
 # ROC curve in training data
 train_pred_votes_Agnostic <- predict(RF_Agnostic, newdata = predictor_data, type = "vote")
-#roc(usedTrainGroup, train_pred_votes_Agnostic[,2], plot = F, print.auc=TRUE, levels = c("NoProgression", "Progression"), direction = "<", col="blue", lwd=2, grid=TRUE)
+roc(usedTrainGroup, train_pred_votes_Agnostic[,2], plot = F, print.auc=TRUE, levels = c("nonCerebral", "cerebral"), direction = "<", col="blue", lwd=2, grid=TRUE)
 
 ### Predict in the training data
 
@@ -141,7 +141,8 @@ MCC_Test <- mcc(preds = RF_predictions_responses_Agnostic, actuals = usedTestGro
 MCC_Test
 
 ## ROC curve and AUC
-roc.multiTest <- multiclass.roc(usedTestGroup, RF_predictions_votes_Agnostic, plot = T, print.auc = TRUE, levels = c("control", "nonCerebral", "cerebral"), col = "blue", grid = TRUE)
+ROCTest <- roc(usedTestGroup, RF_predictions_votes_Agnostic[,2], plot = T, print.auc = TRUE, ci = T, levels = c("nonCerebral", "cerebral"), direction = "<", col = "blue", grid = TRUE)
+ROCTest
 
 # rs <- roc.multiTest[['rocs']]
 # plot.roc(rs[[3]][[1]])
@@ -149,68 +150,10 @@ roc.multiTest <- multiclass.roc(usedTestGroup, RF_predictions_votes_Agnostic, pl
 
 ### MDS plot for testing data
 ## An MDS plot provides a sense of the separation of classes.
-png("./Figs/MDS_Testing.png", width = 2000, height = 2000, res = 300)
+png("./Figs/MDS_Testing_NCvsC.png", width = 2000, height = 2000, res = 300)
 target_labels=as.vector(usedTestGroup)
 MDSplot(RF_Agnostic, usedTestGroup, k=2, pch=target_labels, palette=c("red", "blue", "green"), main="MDS plot")
 dev.off()
-
-#########
-## Using multiROC package
-library(multiROC)
-library(tidyverse)
-library(dummies)
-library(ggplot2)
-
-
-true_label <- dummy(usedTestGroup, sep = ".")
-true_label <- data.frame(true_label)
-colnames(true_label) <- gsub(".*?\\.", "", colnames(true_label))
-colnames(true_label) <- paste(colnames(true_label), "_true")
-final_df <- cbind(true_label, RF_predictions_votes_Agnostic)
-colnames(final_df)[c(4,5,6)] <- paste(colnames(final_df)[c(4,5,6)], "_pred_RF")
-
-
-roc_res <- multi_roc(final_df, force_diag=T)
-plot_roc_df <- plot_roc_data(roc_res)
-
-png(filename = "./Figs/MultiROC_TestingData.png", width = 2000, height = 2000, res = 300)
-ggplot(plot_roc_df, aes(x = 1-Specificity, y=Sensitivity)) +
-  geom_path(aes(color = Group, linetype=Method), size=1.5) +
-  geom_segment(aes(x = 0, y = 0, xend = 1, yend = 1), 
-               colour='grey', linetype = 'dotdash') +
-  theme_bw() + 
-  theme(plot.title = element_text(hjust = 0.5), 
-        legend.justification=c(1, 0), legend.position=c(.95, .05),
-        legend.title=element_blank(), 
-        legend.background = element_rect(fill=NULL, size=0.5, 
-                                         linetype="solid", colour ="black"))
-
-dev.off()
-
-
-pr_res <- multi_pr(final_df, force_diag=T)
-plot_pr_df <- plot_pr_data(pr_res)
-
-png(filename = "./Figs/MultiPRC_TestingData.png", width = 2000, height = 2000, res = 300)
-ggplot(plot_pr_df, aes(x=Recall, y=Precision)) + 
-  geom_path(aes(color = Group, linetype=Method), size=1.5) + 
-  theme_bw() + 
-  theme(plot.title = element_text(hjust = 0.5), 
-        legend.justification=c(1, 0), legend.position=c(.95, .05),
-        legend.title=element_blank(), 
-        legend.background = element_rect(fill=NULL, size=0.5, 
-                                         linetype="solid", colour ="black"))
-dev.off()
-
-
-################
-## Look at the results closly
-unlist(roc_res$AUC)  # Each class vs the others + macro + micro
-unlist(pr_res$AUC)
-
-## With CIs
-roc_auc_with_ci_res <- roc_auc_with_ci(final_df, conf= 0.95, type='basic', R = 100)
-roc_auc_with_ci_res
 
 #######################################################################
 ######################################################################
@@ -220,36 +163,49 @@ roc_auc_with_ci_res
 ## Training data
 DataTrain <- cbind(predictor_data, usedTrainGroup)
 
-# Apparently, SLC39A8 is overexpressed in nonCerebral and cerebral compared to control
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "SLC39A8", which.class = "control")
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "SLC39A8", which.class = "nonCerebral")
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "SLC39A8", which.class = "cerebral")
+# Apparently, CRIPT is overexpressed in nonCerebral vs cerebral 
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "CRIPT", which.class = "nonCerebral")
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "CRIPT", which.class = "cerebral")
 
-# same for MTHFD2
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "MTHFD2", which.class = "control")
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "MTHFD2", which.class = "nonCerebral")
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "MTHFD2", which.class = "cerebral")
+# same for CDC42SE1
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "CDC42SE1", which.class = "nonCerebral")
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "CDC42SE1", which.class = "cerebral")
 
-# BCL11B is overexpressed in control vs cerebral and nonCerebral
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "BCL11B", which.class = "control")
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "BCL11B", which.class = "nonCerebral")
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "BCL11B", which.class = "cerebral")
+# Same for EGR1
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "EGR1", which.class = "nonCerebral")
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "EGR1", which.class = "cerebral")
 
-# BCL6 is overexpressed in nonCerebral and cerebral compared to control
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "BCL6", which.class = "control")
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "BCL6", which.class = "nonCerebral")
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "BCL6", which.class = "cerebral")
+# Same
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "NDUFC1", which.class = "nonCerebral")
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "NDUFC1", which.class = "cerebral")
 
-# MTF1 is overexpressed in nonCerebral and cerebral compared to control
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "MTF1", which.class = "control")
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "MTF1", which.class = "nonCerebral")
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "MTF1", which.class = "cerebral")
+# same
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "PPP6C", which.class = "nonCerebral")
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "PPP6C", which.class = "cerebral")
 
-# TLR8 is overexpressed in nonCerebral and cerebral compared to control
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "TLR8", which.class = "control")
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "TLR8", which.class = "nonCerebral")
-partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "TLR8", which.class = "cerebral")
+# same
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "C18orf8", which.class = "nonCerebral")
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "C18orf8", which.class = "cerebral")
 
+# same
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "CTNNB1", which.class = "nonCerebral")
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "CTNNB1", which.class = "cerebral")
+
+# same
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "ZFR2", which.class = "nonCerebral")
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "ZFR2", which.class = "cerebral")
+
+# ZFR2 is Overexpressed in cerebral vs non cerebral
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "ZFR2", which.class = "nonCerebral")
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "ZFR2", which.class = "cerebral")
+
+# same
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "ASB7", which.class = "nonCerebral")
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "ASB7", which.class = "cerebral")
+
+# TRIM8 is Overexpressed in cerebral vs non cerebral
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "TRIM8", which.class = "nonCerebral")
+partialPlot(RF_Agnostic, pred.data = DataTrain, x.var = "TRIM8", which.class = "cerebral")
 
 
 ## Testing data
