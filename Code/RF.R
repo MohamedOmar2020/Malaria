@@ -92,7 +92,7 @@ varImpPlot(RF_Agnostic, type=2, n.var=30, scale=FALSE, main="Variable Importance
 dev.off()
 
 ## An MDS plot provides a sense of the separation of classes.
-png("./Figs/MDS_Agnostic.png", width = 2000, height = 2000, res = 300)
+png("./Figs/MDS_Training.png", width = 2000, height = 2000, res = 300)
 target_labels=as.vector(target)
 MDSplot(RF_Agnostic, target, k=2, pch=target_labels, palette=c("red", "blue", "green"), main="MDS plot")
 dev.off()
@@ -144,6 +144,13 @@ roc.multiTest <- multiclass.roc(usedTestGroup, RF_predictions_votes_Agnostic, pl
 # rs <- roc.multiTest[['rocs']]
 # plot.roc(rs[[3]][[1]])
 # sapply(1:length(rs),function(i) lines.roc(rs[[i]][[i]],col=i))
+
+### MDS plot for testing data
+## An MDS plot provides a sense of the separation of classes.
+png("./Figs/MDS_Testing.png", width = 2000, height = 2000, res = 300)
+target_labels=as.vector(usedTestGroup)
+MDSplot(RF_Agnostic, usedTestGroup, k=2, pch=target_labels, palette=c("red", "blue", "green"), main="MDS plot")
+dev.off()
 
 #########
 ## Using multiROC package
