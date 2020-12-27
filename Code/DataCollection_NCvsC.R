@@ -434,68 +434,68 @@ all(rownames(allpheno$GSE72058) == colnames(allExpr$GSE72058))
 #############
 # ## Cross-study validation
 # # Leave GSE1124 out
-train <- c("GSE117613","GSE35858", "GSE34404", "GSE116306", "GSE119150", "GSE16463", "GSE72058")
-test <- c("GSE1124-GPL96", "GSE1124-GPL97")
-# 
-# ## Training
-trainMat <- do.call("cbind", exprsMalaria[train])
-trainGroup <- factor(do.call("c", DiseaseStatus[train]))
-levels(trainGroup) <- c("nonCerebral", "cerebral")
-table(trainGroup)
-
-## Testing
-testMat <- do.call("cbind", exprsMalaria[test])
-testGroup <- factor(do.call("c", DiseaseStatus[test]))
-levels(testGroup) <- c("nonCerebral", "cerebral")
-table(testGroup)
-
-# Save for cross-study validation
-save(trainMat, trainGroup, testMat, testGroup, file = "./Objs/MalariaDataGood_GSE1124Out_NCvsC.rda")
-# 
-# #############
-# # Leave GSE117613 out
-train <- c("GSE1124-GPL96", "GSE1124-GPL97", "GSE35858", "GSE34404", "GSE116306", "GSE119150", "GSE16463", "GSE72058")
-test <- c("GSE117613")
-# 
-# ## Training
-trainMat <- do.call("cbind", exprsMalaria[train])
-trainGroup <- factor(do.call("c", DiseaseStatus[train]))
-levels(trainGroup) <- c("nonCerebral", "cerebral")
-table(trainGroup)
-length(trainGroup)
+# train <- c("GSE117613","GSE35858", "GSE34404", "GSE116306", "GSE119150", "GSE16463", "GSE72058")
+# test <- c("GSE1124-GPL96", "GSE1124-GPL97")
+# # 
+# # ## Training
+# trainMat <- do.call("cbind", exprsMalaria[train])
+# trainGroup <- factor(do.call("c", DiseaseStatus[train]))
+# levels(trainGroup) <- c("nonCerebral", "cerebral")
+# table(trainGroup)
 # 
 # ## Testing
-testMat <- exprsMalaria$GSE117613
-testGroup <- factor(do.call("c", DiseaseStatus[test]))
-levels(testGroup) <- c("nonCerebral", "cerebral")
-table(testGroup)
-length(testGroup)
-
-# Save for cross-study validation
-save(trainMat, trainGroup, testMat, testGroup, file = "./Objs/MalariaDataGood_GSE117613Out_NCvsC.rda")
+# testMat <- do.call("cbind", exprsMalaria[test])
+# testGroup <- factor(do.call("c", DiseaseStatus[test]))
+# levels(testGroup) <- c("nonCerebral", "cerebral")
+# table(testGroup)
 # 
-# #############
-# # Leave GSE116306 out
-train <- c("GSE1124-GPL96", "GSE1124-GPL97", "GSE117613", "GSE35858", "GSE34404", "GSE119150", "GSE16463", "GSE72058")
-test <- c("GSE116306")
+# # Save for cross-study validation
+# save(trainMat, trainGroup, testMat, testGroup, file = "./Objs/MalariaDataGood_GSE1124Out_NCvsC.rda")
+# # 
+# # #############
+# # # Leave GSE117613 out
+# train <- c("GSE1124-GPL96", "GSE1124-GPL97", "GSE35858", "GSE34404", "GSE116306", "GSE119150", "GSE16463", "GSE72058")
+# test <- c("GSE117613")
+# # 
+# # ## Training
+# trainMat <- do.call("cbind", exprsMalaria[train])
+# trainGroup <- factor(do.call("c", DiseaseStatus[train]))
+# levels(trainGroup) <- c("nonCerebral", "cerebral")
+# table(trainGroup)
+# length(trainGroup)
+# # 
+# # ## Testing
+# testMat <- exprsMalaria$GSE117613
+# testGroup <- factor(do.call("c", DiseaseStatus[test]))
+# levels(testGroup) <- c("nonCerebral", "cerebral")
+# table(testGroup)
+# length(testGroup)
 # 
-# ## Training
-trainMat <- do.call("cbind", exprsMalaria[train])
-trainGroup <- factor(do.call("c", DiseaseStatus[train]))
-levels(trainGroup) <- c("nonCerebral", "cerebral")
-table(trainGroup)
-length(trainGroup)
-# 
-# ## Testing
-testMat <- exprsMalaria$GSE116306
-testGroup <- factor(do.call("c", DiseaseStatus[test]))
-levels(testGroup) <- c("nonCerebral", "cerebral")
-table(testGroup)
-length(testGroup)
- 
-# Save for cross-study validation
-save(trainMat, trainGroup, testMat, testGroup, file = "./Objs/MalariaDataGood_GSE116306Out_NCvsC.rda")
-# 
+# # Save for cross-study validation
+# save(trainMat, trainGroup, testMat, testGroup, file = "./Objs/MalariaDataGood_GSE117613Out_NCvsC.rda")
+# # 
+# # #############
+# # # Leave GSE116306 out
+# train <- c("GSE1124-GPL96", "GSE1124-GPL97", "GSE117613", "GSE35858", "GSE34404", "GSE119150", "GSE16463", "GSE72058")
+# test <- c("GSE116306")
+# # 
+# # ## Training
+# trainMat <- do.call("cbind", exprsMalaria[train])
+# trainGroup <- factor(do.call("c", DiseaseStatus[train]))
+# levels(trainGroup) <- c("nonCerebral", "cerebral")
+# table(trainGroup)
+# length(trainGroup)
+# # 
+# # ## Testing
+# testMat <- exprsMalaria$GSE116306
+# testGroup <- factor(do.call("c", DiseaseStatus[test]))
+# levels(testGroup) <- c("nonCerebral", "cerebral")
+# table(testGroup)
+# length(testGroup)
+#  
+# # Save for cross-study validation
+# save(trainMat, trainGroup, testMat, testGroup, file = "./Objs/MalariaDataGood_GSE116306Out_NCvsC.rda")
+# # 
 # #############
 # # Leave GSE57813 out
 # train <- c("GSE13507","pmid15930337", "GSE32894", "E-MTAB-4321")
