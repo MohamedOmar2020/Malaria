@@ -6,7 +6,7 @@
 ############################################################################
 rm(list = ls())
 
-setwd("/Volumes/Macintosh/Research/Projects/Malaria")
+#setwd("/Volumes/Macintosh/Research/Projects/Malaria")
 
 
 library(GEOquery)
@@ -310,45 +310,78 @@ expr9 <- t(scale(t(expr9), center = TRUE, scale = TRUE))
 ###############################################################################
 ### Modify the phenotype
 
+# cereberal and severe anemia are considered "complicated"
+# I put the asymptomatic as part of the uncomplicated
+
 # Pheno1
+pheno1 <- pheno1[!(pheno1$`diesease status:ch1` == "healthy"), ]
 pheno1$DiseaseStatus <- as.factor(pheno1$`diesease status:ch1`)
-levels(pheno1$DiseaseStatus) <- c("control", "unComplicated", "Complicated", "Complicated", "unComplicated") 
+levels(pheno1$DiseaseStatus) <- c("unComplicated", "Complicated", "Complicated", "unComplicated") 
 table(pheno1$DiseaseStatus)
 
+expr1 <- expr1[, colnames(expr1) %in% rownames(pheno1)]
+all(rownames(pheno1) == colnames(expr1))
+
 # Pheno2
+pheno2 <- pheno2[!(pheno2$`diesease status:ch1` == "healthy"), ]
 pheno2$DiseaseStatus <- as.factor(pheno2$`diesease status:ch1`)
-levels(pheno2$DiseaseStatus) <- c("control", "unComplicated", "Complicated", "Complicated", "unComplicated") 
+levels(pheno2$DiseaseStatus) <- c("unComplicated", "Complicated", "Complicated", "unComplicated") 
 table(pheno2$DiseaseStatus)
 
+expr2 <- expr2[, colnames(expr2) %in% rownames(pheno2)]
+all(rownames(pheno2) == colnames(expr2))
+
 # Pheno3
+pheno3 <- pheno3[!(pheno3$`diagnosis:ch1` == "no Plasmodium falciparum infection"), ]
 pheno3$DiseaseStatus <- as.factor(pheno3$`diagnosis:ch1`)
-levels(pheno3$DiseaseStatus) <- c("Complicated", "control", "Complicated") 
+levels(pheno3$DiseaseStatus) <- c("Complicated", "Complicated") 
 table(pheno3$DiseaseStatus)
 
+expr3 <- expr3[, colnames(expr3) %in% rownames(pheno3)]
+all(rownames(pheno3) == colnames(expr3))
+
 # Pheno4
+pheno4 <- pheno4[!(pheno4$`disease state:ch2` == "Healthy"), ]
 pheno4$DiseaseStatus <- as.factor(pheno4$`disease state:ch2`)
-levels(pheno4$DiseaseStatus) <- c("control", "Complicated", "unComplicated") 
+levels(pheno4$DiseaseStatus) <- c("Complicated", "unComplicated") 
 table(pheno4$DiseaseStatus)
 
+expr4 <- expr4[, colnames(expr4) %in% rownames(pheno4)]
+all(rownames(pheno4) == colnames(expr4))
+
 # Pheno5
-pheno5$DiseaseStatus <- as.factor(pheno5$source_name_ch1)
-levels(pheno5$DiseaseStatus) <- c("control", "unComplicated") 
+# This dataset is not clear about the complication status >> use parasitemia
+pheno5 <- pheno5[!(pheno5$source_name_ch1 == "Whole blood, age-matched control"), ]
+pheno5$DiseaseStatus <- as.factor(pheno5$`parasitemia category:ch1`)
+levels(pheno5$DiseaseStatus) <- c("Complicated", "unComplicated") 
 table(pheno5$DiseaseStatus)
+
+expr5 <- expr5[, colnames(expr5) %in% rownames(pheno5)]
+all(rownames(pheno5) == colnames(expr5))
 
 # Pheno6
 pheno6$DiseaseStatus <- as.factor(pheno6$`disease state:ch1`)
 levels(pheno6$DiseaseStatus) <- c("Complicated", "unComplicated", "Complicated") 
 table(pheno6$DiseaseStatus)
 
+#expr6 <- expr6[, colnames(expr6) %in% rownames(pheno6)]
+all(rownames(pheno6) == colnames(expr6))
+
 # Pheno7
-pheno7$DiseaseStatus <- as.factor(pheno7$`subject status:ch1`)
-levels(pheno7$DiseaseStatus) <- c("unComplicated", "control") 
+# Use parasitemia
+pheno7 <- pheno7[!(pheno7$`subject status:ch1` == "normal, healthy subject"), ]
+pheno7$DiseaseStatus <- c("unComplicated", "unComplicated", "unComplicated", "Complicated", "Complicated", "Complicated")
+pheno7$DiseaseStatus <- as.factor(pheno7$DiseaseStatus)
+levels(pheno7$DiseaseStatus) <- c("Complicated", "unComplicated") 
 table(pheno7$DiseaseStatus)
 
+expr7 <- expr7[, colnames(expr7) %in% rownames(pheno7)]
+all(rownames(pheno7) == colnames(expr7))
+
 # Pheno8
-pheno8 <- pheno8[pheno8$`disease group:ch1` %in% c("Pooled healthy control", "Malaria"), ]
+pheno8 <- pheno8[pheno8$`disease group:ch1` == "Malaria", ]
 pheno8$DiseaseStatus <- as.factor(pheno8$`disease group:ch1`)
-levels(pheno8$DiseaseStatus) <- c("unComplicated", "control") 
+levels(pheno8$DiseaseStatus) <- c("unComplicated") 
 table(pheno8$DiseaseStatus)
 
 expr8 <- expr8[, colnames(expr8) %in% rownames(pheno8)]
@@ -371,7 +404,7 @@ names(allExpr) <- c("GSE1124-GPL96", "GSE1124-GPL97", "GSE117613", "GSE35858", "
 ### Filter phenotype information for the required samples
 DiseaseStatus <- mapply(x=allpheno, FUN=function(x) {
   x <- x[,"DiseaseStatus"]
-  out <- factor(x, levels=c("control", "unComplicated", "Complicated"))
+  out <- factor(x, levels=c("unComplicated", "Complicated"))
   out
 })
 
@@ -379,6 +412,7 @@ DiseaseStatus <- mapply(x=allpheno, FUN=function(x) {
 ##################################################################################
 
 ### Find commom subset of genes
+# The N of common genes is small >> consider removing datasets with few genes
 commonGenes <- Reduce("intersect", lapply(allExpr, rownames))
 
 
@@ -406,45 +440,45 @@ all(rownames(allpheno$GSE72058) == colnames(allExpr$GSE72058))
 #############
 # ## Cross-study validation
 # # Leave GSE1124 out
-train <- c("GSE117613","GSE35858", "GSE34404", "GSE116306", "GSE119150", "GSE16463", "GSE72058")
-test <- c("GSE1124-GPL96", "GSE1124-GPL97")
-# 
-# ## Training
-trainMat <- do.call("cbind", exprsMalaria[train])
-trainGroup <- factor(do.call("c", DiseaseStatus[train]))
-levels(trainGroup) <- c("control", "unComplicated", "Complicated")
-table(trainGroup)
-
-## Testing
-testMat <- do.call("cbind", exprsMalaria[test])
-testGroup <- factor(do.call("c", DiseaseStatus[test]))
-levels(testGroup) <- c("control", "unComplicated", "Complicated")
-table(testGroup)
-
-# Save for cross-study validation
-save(trainMat, trainGroup, testMat, testGroup, file = "./Objs/MalariaDataGood_GSE1124Out_Comp.rda")
-# 
-# #############
-# # Leave GSE117613 out
-train <- c("GSE1124-GPL96", "GSE1124-GPL97", "GSE35858", "GSE34404", "GSE116306", "GSE119150", "GSE16463", "GSE72058")
-test <- c("GSE117613")
-# 
-# ## Training
-trainMat <- do.call("cbind", exprsMalaria[train])
-trainGroup <- factor(do.call("c", DiseaseStatus[train]))
-levels(trainGroup) <- c("control", "unComplicated", "Complicated")
-table(trainGroup)
-length(trainGroup)
+# train <- c("GSE117613","GSE35858", "GSE34404", "GSE116306", "GSE119150", "GSE16463", "GSE72058")
+# test <- c("GSE1124-GPL96", "GSE1124-GPL97")
+# # 
+# # ## Training
+# trainMat <- do.call("cbind", exprsMalaria[train])
+# trainGroup <- factor(do.call("c", DiseaseStatus[train]))
+# levels(trainGroup) <- c("control", "unComplicated", "Complicated")
+# table(trainGroup)
 # 
 # ## Testing
-testMat <- exprsMalaria$GSE117613
-testGroup <- factor(do.call("c", DiseaseStatus[test]))
-levels(testGroup) <- c("control", "unComplicated", "Complicated")
-table(testGroup)
-length(testGroup)
-
-# Save for cross-study validation
-save(trainMat, trainGroup, testMat, testGroup, file = "./Objs/MalariaDataGood_GSE117613Out_Comp.rda")
+# testMat <- do.call("cbind", exprsMalaria[test])
+# testGroup <- factor(do.call("c", DiseaseStatus[test]))
+# levels(testGroup) <- c("control", "unComplicated", "Complicated")
+# table(testGroup)
+# 
+# # Save for cross-study validation
+# save(trainMat, trainGroup, testMat, testGroup, file = "./Objs/MalariaDataGood_GSE1124Out_Comp.rda")
+# # 
+# # #############
+# # # Leave GSE117613 out
+# train <- c("GSE1124-GPL96", "GSE1124-GPL97", "GSE35858", "GSE34404", "GSE116306", "GSE119150", "GSE16463", "GSE72058")
+# test <- c("GSE117613")
+# # 
+# # ## Training
+# trainMat <- do.call("cbind", exprsMalaria[train])
+# trainGroup <- factor(do.call("c", DiseaseStatus[train]))
+# levels(trainGroup) <- c("control", "unComplicated", "Complicated")
+# table(trainGroup)
+# length(trainGroup)
+# # 
+# # ## Testing
+# testMat <- exprsMalaria$GSE117613
+# testGroup <- factor(do.call("c", DiseaseStatus[test]))
+# levels(testGroup) <- c("control", "unComplicated", "Complicated")
+# table(testGroup)
+# length(testGroup)
+# 
+# # Save for cross-study validation
+# save(trainMat, trainGroup, testMat, testGroup, file = "./Objs/MalariaDataGood_GSE117613Out_Comp.rda")
 # 
 # #############
 # # Leave GSE32894 out
