@@ -19,7 +19,7 @@ library(enrichR)
 library(mltools)
 library(xtable)
 library(dplyr)
-
+library(superheat)
 
 ## Load data
 load("./Objs/MalariaDataGood_Comp.rda")
@@ -229,4 +229,36 @@ dev.off()
 
 save(basicplot_KTSP, file = "./Objs/BasicPlot_KTSP_Complicated.rda")
 
+##################################################################################################
+### Heatmaps
+##################################################################################################
+#### Make a heatmap of the TSPs expression in the 3 datasets
+
+
+Comp_Stats <- ktspStatsTestRes$comparisons
+Comp_Stats <- Comp_Stats*1
+
+# Order the stats by the sum of votes
+NewOrder <- order(rowSums(Comp_Stats))
+Comp_Stats <- Comp_Stats[NewOrder, ]
+
+#GroupCol <- ArrayGroup[NewOrder]
+#levels(GroupCol) <- c("red", "blue")
+
+# Order the true class labels
+CompGroup <- usedTestGroup
+CompGroup <- CompGroup[NewOrder]
+
+# Get the predicted class labels
+PredClass <- usedTestPredictionRes
+#PredClass <- factor(PredClass, levels = c("POS", "NEG")) 
+levels(PredClass) <- c("blue", "red")
+PredClass <- PredClass[NewOrder]
+# Check order 
+all(rownames(Comp_Stats) == names(PredClass)) # TRUE:: No Need to order them (Already ordered by sum of votes) 
+
+# Plot
+png(filename = "./Figs/CompKTSP_Heatmap.png", width = 3000, height = 2000, res = 200)
+superheat(Comp_Stats, col.dendrogram = F, yr = rowSums(Comp_Stats), yr.plot.type  = "bar", left.label.text.col = c("blue", "red"), membership.rows = CompGroup, bottom.label.text.size = 3.5, yr.num.ticks = 6, yr.axis.name	= "Sum of votes", yr.obs.col = PredClass, title = "Heatmap for the TSPs votes in the testing data")
+dev.off()
 

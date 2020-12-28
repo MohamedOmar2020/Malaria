@@ -230,4 +230,37 @@ dev.off()
 
 save(basicplot_KTSP, file = "./Objs/BasicPlot_KTSP_Cerebral.rda")
 
+##################################################################################################
+### Heatmaps
+##################################################################################################
+#### Make a heatmap of the TSPs expression in the 3 datasets
+
+
+Cerebral_Stats <- ktspStatsTestRes$comparisons
+Cerebral_Stats <- Cerebral_Stats*1
+
+# Order the stats by the sum of votes
+NewOrder <- order(rowSums(Cerebral_Stats))
+Cerebral_Stats <- Cerebral_Stats[NewOrder, ]
+
+#GroupCol <- ArrayGroup[NewOrder]
+#levels(GroupCol) <- c("red", "blue")
+
+# Order the true class labels
+CerebralGroup <- usedTestGroup
+CerebralGroup <- CerebralGroup[NewOrder]
+
+# Get the predicted class labels
+PredClass <- usedTestPredictionRes
+#PredClass <- factor(PredClass, levels = c("POS", "NEG")) 
+levels(PredClass) <- c("blue", "red")
+PredClass <- PredClass[NewOrder]
+# Check order 
+all(rownames(Cerebral_Stats) == names(PredClass)) # TRUE:: No Need to order them (Already ordered by sum of votes) 
+
+# Plot
+png(filename = "./Figs/CerebralKTSP_Heatmap.png", width = 3000, height = 2000, res = 200)
+superheat(Cerebral_Stats, col.dendrogram = F, yr = rowSums(Cerebral_Stats), yr.plot.type  = "bar", left.label.text.col = c("blue", "red"), membership.rows = CerebralGroup, bottom.label.text.size = 3.5, yr.num.ticks = 6, yr.axis.name	= "Sum of votes", yr.obs.col = PredClass, title = "Heatmap for the TSPs votes in the testing data")
+dev.off()
+
 
