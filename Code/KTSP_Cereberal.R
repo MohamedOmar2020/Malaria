@@ -156,3 +156,78 @@ CereberalKTSP_Perf <- cbind(TrainPerf, TestPerf)
 save(CereberalKTSP_Perf, file = "./Objs/CereberalKTSP_Perf.rda")
 
 ########################################################################
+########################################################################
+## Plot AUC of both the agnostic and mechanistic classifiers using ggplot2
+### Prepare the legend
+forLegend_KTSP <- apply(rbind(
+  ci(roc(usedTrainGroup, ktspStatsTrainRes$statistics, levels = c("nonCerebral", "cerebral"), direction = "<")),
+  ci(roc(usedTestGroup, ktspStatsTestRes$statistics, levels = c("nonCerebral", "cerebral"), direction = "<"))
+),  1, function(x) {
+  x <- format(round(x, digits=2), nsmall=2)
+  paste("AUC: ", x[[2]], ";", "95% CI: ", x[[1]], "-", x[[3]])
+})
+
+
+#################################################################
+### ROC curves Using ggplot2
+
+### Training
+datTrn_KTSP <- melt(data.frame(
+  ## Training Group
+  Training=factor(usedTrainGroup, levels = c("nonCerebral", "cerebral")),
+  ## Mechanistic KTSP SUM training
+  KTSP.Training=ktspStatsTrainRes$statistics))
+### Change Colnames
+colnames(datTrn_KTSP) <- c("Status", "KTSP_type", "KTSP_sum")
+
+
+### Testing
+datTst_KTSP <- melt(data.frame(
+  ## Testing group
+  Testing=factor(usedTestGroup, levels = c("nonCerebral", "cerebral")),
+  ## Mechanistic KTSP SUM training
+  KTSP.Testing=ktspStatsTestRes$statistics))
+### Change Colnames
+colnames(datTst_KTSP) <- c("Status", "KTSP_type", "KTSP_sum")
+
+### Combine
+dat_KTSP <- rbind(datTrn_KTSP, datTst_KTSP)
+dat_KTSP$Status <- as.numeric(dat_KTSP$Status)-1
+
+### Replace levels
+levels(dat_KTSP$KTSP_type) <- gsub("\\.", "-", levels(dat_KTSP$KTSP_type))
+levels(dat_KTSP$KTSP_type) <- paste(levels(dat_KTSP$KTSP_type), forLegend_KTSP[c(1,2)])
+
+#################################################################
+### Plot Curve
+png("./Figs/AUCggplot_Cerebral.png",
+    width=3000, height=3000, res=360)
+### Color
+myCol <- brewer.pal(3, "Dark2")[c(2,1)]
+### Plot and legend titles
+plotTitle <- "Performance of the cerebral malaria signature in the training and testing data"
+#legendTitle <- paste("Mechanistic (", nrow(ktspPredictorRes$TSPs), " pairs)",
+#                     "Agnostic (", nrow(ktspPredictorUnRes$TSPs), " pairs)",  sep="")
+### Plot
+basicplot_KTSP <- ggplot(dat_KTSP, aes(d=Status, m=KTSP_sum, color=KTSP_type,
+                                       linetype = KTSP_type)) +
+  geom_roc(cutoffs.at = seq(1,20,1)) +
+  style_roc(theme = theme_grey) + ggtitle(plotTitle) +
+  theme(plot.title = element_text(face="bold", size=16, hjust = 0.5),
+        axis.text=element_text(face="plain", size = 11),
+        axis.title=element_text(face="bold", size = 13),
+        legend.justification=c(1,0),  legend.position=c(1,0),
+        legend.background=element_rect(fill="lightblue1"),
+        legend.text=element_text(face="plain", size = 10),
+        legend.title = element_text(face="bold", size=12)) +
+  #scale_color_manual(legendTitle, values=rep(myCol, 2)) +
+  #scale_linetype_manual(legendTitle, values=rep(c("solid", "dotted"), each=2)) +
+  guides(colour = guide_legend(override.aes = list(size=3)))
+### Plot
+basicplot_KTSP
+### Close device
+dev.off()
+
+save(basicplot_KTSP, file = "./Objs/BasicPlot_KTSP_Cerebral.rda")
+
+
