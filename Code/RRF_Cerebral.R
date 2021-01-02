@@ -48,12 +48,13 @@ RF_Strap <- function(data, indices) {
 }
 
 set.seed(333)
-bootobject<- boot(data = DataTrain, statistic = RF_Strap, R = 100, parallel = "multicore", ncpus = 15) 
+bootobject_Cerebral <- boot(data = DataTrain, statistic = RF_Strap, R = 100, parallel = "multicore", ncpus = 15) 
 
-OutFeat <- bootobject$t
+save(bootobject_Cerebral, file = "./Objs/bootobject_Cerebral.rda")
 
-save(OutFeat, file = "./OutFeat.rda")
+load("./Objs/bootobject_Cerebral.rda")
 
+OutFeat <- bootobject_Cerebral$t
 
 #####################################
 ## Select the most frequent features
@@ -71,7 +72,7 @@ sum_result <- do.call(rbind, list_results)
 sum_result$Gene <- rownames(sum_result)
 sum_result <- sum_result[sum_result$rep_rows >= 5, ]
 Sel <- sum_result$Gene
-
+Sel
 #####################################
 ## Use the selected features to build a new random forest model
 
@@ -91,13 +92,15 @@ sampsizes <- rep(min_size,num_classes)
 
 ################
 ## Build the random forest model
-RF <- tuneRF(x = PredictorData_Filt, y = usedTrainGroup, mtryStart = 1, ntreeTry=500, stepFactor = 1, improve=0.05, trace=F, plot=F, doBest=T, sampsize = sampsizes)
-RF
+RF_Cerebral <- tuneRF(x = PredictorData_Filt, y = usedTrainGroup, mtryStart = 1, ntreeTry=500, stepFactor = 1, improve=0.05, trace=F, plot=F, doBest=T, sampsize = sampsizes)
+RF_Cerebral
 
+# save the model
+save(RF_Cerebral, file = "./Objs/RF_Cerebral.rda")
 ################
 # Predict in the training data
-PredVotes_Train <- predict(RF, newdata = PredictorData_Filt, type = "vote")
-PredResponse_Train <- predict(RF, PredictorData_Filt, type="response")
+PredVotes_Train <- predict(RF_Cerebral, newdata = PredictorData_Filt, type = "vote")
+PredResponse_Train <- predict(RF_Cerebral, PredictorData_Filt, type="response")
 
 ROCTrain <- roc(usedTrainGroup, PredVotes_Train[,2], plot = F, print.auc = TRUE, levels = c("nonCerebral", "cerebral"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
 ROCTrain
@@ -112,8 +115,8 @@ MCC_Train
 
 #################
 ## Predict in the testing data
-PredVotes_Test <- predict(RF, newdata = TestingData_Filt, type = "vote")
-PredResponse_Test <- predict(RF, TestingData_Filt, type="response")
+PredVotes_Test <- predict(RF_Cerebral, newdata = TestingData_Filt, type = "vote")
+PredResponse_Test <- predict(RF_Cerebral, TestingData_Filt, type="response")
 
 ROCTest <- roc(usedTestGroup, PredVotes_Test[,2], plot = F, print.auc = TRUE, levels = c("nonCerebral", "cerebral" ), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
 ROCTest
@@ -127,9 +130,9 @@ MCC_Test
 
 ###################3
 # RandomForest calculates an importance measures for each variable.
-rf_importances <- randomForest::importance(RF, scale=F)
-# rf_importances <- rf_importances[order(rf_importances[,4], decreasing = TRUE), ]
-# rf_importances <- rf_importances[!(rf_importances[,4] == 0), ]
+RF_Cerebral_importances <- randomForest::importance(RF_Cerebral, scale=F)
+# RF_Cerebral_importances <- RF_Cerebral_importances[order(RF_Cerebral_importances[,4], decreasing = TRUE), ]
+# RF_Cerebral_importances <- rf_importances[!(rf_importances[,4] == 0), ]
 # #MechanisticRF_Pairs <- rownames(rf_importances)[1:50]
 # #save(MechanisticRF_Pairs, file = "./Objs/RF/MechanisticRF_Pairs.rda")
 

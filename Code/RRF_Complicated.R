@@ -93,13 +93,15 @@ sampsizes <- rep(min_size,num_classes)
 
 ################
 ## Build the random forest model
-RF <- tuneRF(x = PredictorData_Filt, y = usedTrainGroup, mtryStart = 1, ntreeTry=500, stepFactor = 1, improve=0.05, trace=F, plot=F, doBest=T, sampsize = sampsizes)
-RF
+RF_Comp <- tuneRF(x = PredictorData_Filt, y = usedTrainGroup, mtryStart = 1, ntreeTry=500, stepFactor = 1, improve=0.05, trace=F, plot=F, doBest=T, sampsize = sampsizes)
+RF_Comp
 
+# Save the model
+save(RF_Comp, file = "./Objs/RF_Comp.rda")
 ################
 # Predict in the training data
-PredVotes_Train <- predict(RF, newdata = PredictorData_Filt, type = "vote")
-PredResponse_Train <- predict(RF, PredictorData_Filt, type="response")
+PredVotes_Train <- predict(RF_Comp, newdata = PredictorData_Filt, type = "vote")
+PredResponse_Train <- predict(RF_Comp, PredictorData_Filt, type="response")
 
 ROCTrain <- roc(usedTrainGroup, PredVotes_Train[,2], plot = F, print.auc = TRUE, levels = c("unComplicated", "Complicated"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
 ROCTrain
@@ -114,13 +116,13 @@ MCC_Train
 
 #################
 ## Predict in the testing data
-PredVotes_Test <- predict(RF, newdata = TestingData_Filt, type = "vote")
-PredResponse_Test <- predict(RF, TestingData_Filt, type="response")
+PredVotes_Test <- predict(RF_Comp, newdata = TestingData_Filt, type = "vote")
+PredResponse_Test <- predict(RF_Comp, TestingData_Filt, type="response")
 
 ROCTest <- roc(usedTestGroup, PredVotes_Test[,2], plot = F, print.auc = TRUE, levels = c("unComplicated", "Complicated"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
 ROCTest
 
-### Resubstitution performance in the Test set
+### Resubstitution peRF_Compormance in the Test set
 ConfusionTest <- confusionMatrix(PredResponse_Test, usedTestGroup, positive = "Complicated", mode = "everything")
 ConfusionTest
 
@@ -129,9 +131,10 @@ MCC_Test
 
 ###################3
 # RandomForest calculates an importance measures for each variable.
-rf_importances <- randomForest::importance(RF, scale=F)
-# rf_importances <- rf_importances[order(rf_importances[,4], decreasing = TRUE), ]
+RF_Comp_importances <- randomForest::importance(RF_Comp, scale=F)
+# RF_Comp_importances <- rf_importances[order(rf_importances[,4], decreasing = TRUE), ]
 # rf_importances <- rf_importances[!(rf_importances[,4] == 0), ]
 # #MechanisticRF_Pairs <- rownames(rf_importances)[1:50]
 # #save(MechanisticRF_Pairs, file = "./Objs/RF/MechanisticRF_Pairs.rda")
+###########################
 
