@@ -259,6 +259,6 @@ all(rownames(Comp_Stats) == names(PredClass)) # TRUE:: No Need to order them (Al
 
 # Plot
 png(filename = "./Figs/CompKTSP_Heatmap.png", width = 3000, height = 2000, res = 200)
-superheat(Comp_Stats, col.dendrogram = F, yr = rowSums(Comp_Stats), yr.plot.type  = "bar", left.label.text.col = c("blue", "red"), membership.rows = CompGroup, bottom.label.text.size = 3.5, yr.num.ticks = 6, yr.axis.name	= "Sum of votes", yr.obs.col = PredClass, title = "Heatmap for the TSPs votes in the testing data")
+superheat(Comp_Stats, col.dendrogram = F, yr = rowSums(Comp_Stats), yr.plot.type  = "bar", left.label.text.col = c("blue", "red"), membership.rows = CompGroup, bottom.label.text.size = 2, yr.num.ticks = 6, yr.axis.name	= "Sum of votes", yr.obs.col = PredClass, title = "Heatmap for the TSPs votes in the testing data")
 dev.off()
 
