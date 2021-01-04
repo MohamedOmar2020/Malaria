@@ -139,7 +139,7 @@ PRC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("PRC")) + la
 load("./Objs/Comp_Curves.rda")
 ##############################################
 ## Make a combined figure for the paper
-tiff(filename = "./Figs/TwoSignaturesPerformance.tiff", width = 1500, height = 1000, res = 100)
+png(filename = "./Figs/TwoSignaturesPerformance.png", width = 1500, height = 1000, res = 100)
 ((ROC_Test_Comp / PRC_Test_Comp + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
     (ROC_Test_Cerebral / PRC_Test_Cerebral + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12)))
 ) +
