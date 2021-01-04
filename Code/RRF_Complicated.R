@@ -10,6 +10,7 @@ library(RRF)
 require(limma)
 library(randomForest)
 library(boot)
+library(precrec)
 
 ## Load data
 load("./Objs/MalariaDataGood_Comp.rda")
@@ -93,6 +94,7 @@ sampsizes <- rep(min_size,num_classes)
 
 ################
 ## Build the random forest model
+set.seed(333)
 RF_Comp <- tuneRF(x = PredictorData_Filt, y = usedTrainGroup, mtryStart = 1, ntreeTry=500, stepFactor = 1, improve=0.05, trace=F, plot=F, doBest=T, sampsize = sampsizes)
 RF_Comp
 
@@ -129,6 +131,13 @@ ConfusionTest
 MCC_Test <- mltools::mcc(pred = PredResponse_Test, actuals = usedTestGroup)
 MCC_Test
 
+# For ROC and PRC curves
+sscurves_Test_Comp <- evalmod(scores = PredVotes_Test[,2], labels = usedTestGroup)
+sscurves_Test_Comp
+ROC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in the testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.85"), size = 5)
+PRC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in the testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.95"), size = 5)
+
+save(ROC_Test_Comp, PRC_Test_Comp, file = "./Objs/Comp_Curves.rda")
 ###################3
 # RandomForest calculates an importance measures for each variable.
 RF_Comp_importances <- randomForest::importance(RF_Comp, scale=F)

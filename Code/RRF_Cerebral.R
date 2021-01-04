@@ -10,6 +10,7 @@ library(RRF)
 require(limma)
 library(randomForest)
 library(boot)
+library(patchwork)
 
 ## Load data
 load("./Objs/MalariaDataGood_NCvsC.rda")
@@ -127,6 +128,28 @@ ConfusionTest
 
 MCC_Test <- mltools::mcc(pred = PredResponse_Test, actuals = usedTestGroup)
 MCC_Test
+
+# For ROC and PRC curves
+sscurves_Test_Cerebral <- evalmod(scores = PredVotes_Test[,2], labels = usedTestGroup)
+sscurves_Test_Cerebral
+ROC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in the testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.98"), size = 5)
+PRC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in the testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.98"), size = 5)
+
+# Load the 2 curves of the complicated malaria signature
+load("./Objs/Comp_Curves.rda")
+##############################################
+## Make a combined figure for the paper
+tiff(filename = "./Figs/TwoSignaturesPerformance.tiff", width = 1500, height = 1000, res = 100)
+((ROC_Test_Comp / PRC_Test_Comp + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
+    (ROC_Test_Cerebral / PRC_Test_Cerebral + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12)))
+) +
+  #plot_layout(widths = c(0.4, 1)) + 
+  plot_annotation(
+    title = 'The performance of the two malaria signatures in the testing data',
+    tag_levels = c('A', '1'),
+    theme = theme(plot.title = element_text(size = 17, face = "bold"))
+  )
+dev.off()
 
 ###################3
 # RandomForest calculates an importance measures for each variable.

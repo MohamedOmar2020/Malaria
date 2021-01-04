@@ -675,6 +675,18 @@ mixTestStudy <- allStudies[ trainingOrTesting == 1]
 table(mixTrainGroup)
 table(mixTestGroup)
 
+# Training and testing samples
+TrainSamples <- colnames(mixTrainMat)
+TestSamples <- colnames(mixTestMat)
+
+PhenoTrain <- lapply(allpheno, function(x){
+  x <- x[rownames(x) %in% TrainSamples, ]
+})
+
+PhenoTest <- lapply(allpheno, function(x){
+  x <- x[rownames(x) %in% TestSamples, ]
+})
+
 ###########################################################################
 ### Save
 save(exprsMalaria, 
