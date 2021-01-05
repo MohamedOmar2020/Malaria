@@ -44,7 +44,7 @@ featNo <- nrow(usedTrainMat)
 set.seed(333)
 
 ktspPredictorRes <- SWAP.Train.KTSP(
-  usedTrainMat, usedTrainGroup, krange=10, featureNo= featNo, 
+  usedTrainMat, usedTrainGroup, krange=ktsp, featureNo= featNo, 
   FilterFunc = SWAP.Filter.Wilcoxon)
 
 ktspPredictorRes

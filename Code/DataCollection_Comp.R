@@ -556,6 +556,7 @@ allStudies <- names(allGroup)
 names(allGroup) <- colnames(allMat)
 all(colnames(allMat) == names(allGroup))
 
+#save(allMat, file = "./Objs/AllMat.rda")
 #############################################################
 ### WBC count
 

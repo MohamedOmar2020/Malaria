@@ -5,9 +5,12 @@ rm(list = ls())
 
 library(GEOquery)
 
-DengueDataset1 <- getGEO("GSE51808", GSEMatrix = T, AnnotGPL = T)
-DengueDataset1 <- DengueDataset1$GSE51808_series_matrix.txt.gz
+#DengueDataset1 <- getGEO("GSE51808", GSEMatrix = T, AnnotGPL = T)
+#DengueDataset1 <- DengueDataset1$GSE51808_series_matrix.txt.gz
 
+#save(DengueDataset1, file = "./Data/DengueDataset1.rda")
+
+load("./Data/DengueDataset1.rda")
 
 Expr_Dengue1 <- exprs(DengueDataset1)
 Pheno_Dengue1 <- pData(DengueDataset1)
@@ -42,8 +45,8 @@ Expr_Dengue1 <- t(scale(t(Expr_Dengue1), center = TRUE, scale = TRUE))
 ####################################
 
 ### Modify the phenotype
-# Remove controls
 
+# Control and convalescent VS DF and DHF
 # Pheno1
 Pheno_Dengue1$DiseaseStatus <- as.factor(Pheno_Dengue1$`status:ch1`)
 levels(Pheno_Dengue1$DiseaseStatus) <- c("control", "control", "case", "case") 
@@ -69,6 +72,13 @@ PredResponse_Dengue <- predict(RF_Comp, TestingData_Dengue, type="response")
 ROCTest <- roc(ClassDengueVsNormal, PredVotes_Dengue[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
 ROCTest
 
+# For ROC and PRC curves
+sscurves_Dengue1 <- evalmod(scores = PredVotes_Dengue[,2], labels = ClassDengueVsNormal)
+sscurves_Dengue1
+ROC_Dengue <- autoplot(sscurves_Dengue1, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE51808 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.52"), size = 5)
+PRC_Dengue <- autoplot(sscurves_Dengue1, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE51808 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.54"), size = 5)
+
+save(ROC_Dengue, PRC_Dengue, file = "./Objs/Dengue1_Curves.rda")
 
 ########################################################################################
 #########################################################################################
