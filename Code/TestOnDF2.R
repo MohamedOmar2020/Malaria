@@ -5,9 +5,12 @@ rm(list = ls())
 
 library(GEOquery)
 
-DengueDataset2 <- getGEO("GSE96656", GSEMatrix = T, AnnotGPL = T)
-DengueDataset2 <- DengueDataset2$GSE96656_series_matrix.txt.gz
+#DengueDataset2 <- getGEO("GSE96656", GSEMatrix = T, AnnotGPL = T)
+#DengueDataset2 <- DengueDataset2$GSE96656_series_matrix.txt.gz
 
+#save(DengueDataset2, file = "./Data/DengueDataset2.rda")
+
+load("./Data/DengueDataset2.rda")
 
 Expr_Dengue2 <- exprs(DengueDataset2)
 Pheno_Dengue2 <- pData(DengueDataset2)
@@ -28,27 +31,22 @@ Expr_Dengue2 <- Expr_Dengue2[sel, ]
 Expr_Dengue2 <- Expr_Dengue2[!is.na(rownames(Expr_Dengue2)),]
 dim(Expr_Dengue2)
 
-range(Expr_Dengue2)
-#plot(density(Expr_Dengue2))
-#boxplot(Expr_Dengue2)
-# X1 <- Expr_Dengue2
-# ffun <- filterfun(pOverA(p = 0.5, A = 100))
-# filt1 <- genefilter(2^X1,ffun)
-# Expr_Dengue2 <- Expr_Dengue2[filt1,]
-# 
+range(Expr_Dengue2)  # I think already Z-transformed
+
 #Expr_Dengue2 <- t(scale(t(Expr_Dengue2), center = TRUE, scale = TRUE))
 
 
 ####################################
 
 ### Modify the phenotype
-# Remove controls
+
+# Denge Fever and DHF vs Healthy
 
 # Pheno1
 Pheno_Dengue2$DiseaseStatus <- as.factor(Pheno_Dengue2$`disease state:ch2`)
 levels(Pheno_Dengue2$DiseaseStatus) <- c("case", "case", "control") 
 table(Pheno_Dengue2$DiseaseStatus)
-
+Pheno_Dengue2$DiseaseStatus <- factor(Pheno_Dengue2$DiseaseStatus, levels = c("control", "case"))
 #expr1 <- expr1[, colnames(expr1) %in% rownames(Pheno_Dengue2)]
 #all(rownames(Pheno_Dengue2) == colnames(expr1))
 
@@ -73,6 +71,13 @@ PredResponse_Dengue <- predict(RF_Comp, TestingData_Dengue, type="response")
 ROCTest <- roc(ClassDengueVsNormal, PredVotes_Dengue[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
 ROCTest
 
+# For ROC and PRC curves
+sscurves_Dengue2 <- evalmod(scores = PredVotes_Dengue[,2], labels = ClassDengueVsNormal)
+sscurves_Dengue2
+ROC_Dengue2 <- autoplot(sscurves_Dengue2, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE96656 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.37"), size = 5)
+PRC_Dengue2 <- autoplot(sscurves_Dengue2, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE96656 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.71"), size = 5)
+
+save(ROC_Dengue2, PRC_Dengue2, file = "./Objs/Dengue2_Curves.rda")
 
 ########################################################################################
 #########################################################################################
