@@ -77,21 +77,22 @@ save(ROC_Adenovirus, PRC_Adenovirus, file = "./Objs/Adenovirus1_Curves.rda")
 
 ########################################################################################
 #########################################################################################
-###### HDF vs DF
+###### AdenoVirus vs normal
 
 ### Modify the phenotype
 # Remove controls
 
 # Pheno1
-Pheno_Adenovirus1 <- Pheno_Adenovirus1[!(Pheno_Adenovirus1$`status:ch1` %in% c("convalescent", "control")), ]
-Pheno_Adenovirus1$DiseaseStatus2 <- as.factor(Pheno_Adenovirus1$`status:ch1`)
-#levels(Pheno_Adenovirus1$DiseaseStatus) <- c("DF", "DHF") 
+Pheno_Adenovirus1 <- Pheno_Adenovirus1[Pheno_Adenovirus1$`pathogen:ch1` %in%  c("Adenovirus", "None"), ]
+Pheno_Adenovirus1$DiseaseStatus2 <- as.factor(Pheno_Adenovirus1$`pathogen:ch1`)
+levels(Pheno_Adenovirus1$DiseaseStatus2) <- c("AdenoVirus", "control") 
 table(Pheno_Adenovirus1$DiseaseStatus2)
+Pheno_Adenovirus1$DiseaseStatus2 <- factor(Pheno_Adenovirus1$DiseaseStatus2, levels = c("control", "AdenoVirus"))
 
 Expr_Adenovirus1 <- Expr_Adenovirus1[, colnames(Expr_Adenovirus1) %in% rownames(Pheno_Adenovirus1)]
 all(rownames(Pheno_Adenovirus1) == colnames(Expr_Adenovirus1))
 
-ClassDHFvsDF <- Pheno_Adenovirus1$DiseaseStatus2
+ClassAdenoVsNormal <- Pheno_Adenovirus1$DiseaseStatus2
 
 ####################################
 ## Load the complicated malaria signature
@@ -105,7 +106,7 @@ TestingData_Adenovirus <- t(Expr_Adenovirus1)
 PredVotes_Adenovirus <- predict(RF_Comp, newdata = TestingData_Adenovirus, type = "vote")
 PredResponse_Adenovirus <- predict(RF_Comp, TestingData_Adenovirus, type="response")
 
-ROCTest <- roc(ClassDHFvsDF, PredVotes_Adenovirus[,2], plot = F, print.auc = TRUE, levels = c("DF", "DHF"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest <- roc(ClassAdenoVsNormal, PredVotes_Adenovirus[,2], plot = F, print.auc = TRUE, levels = c("control", "AdenoVirus"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
 ROCTest
 
 
@@ -121,5 +122,5 @@ load("./Objs/RF_Cerebral.rda")
 PredVotes_Adenovirus <- predict(RF_Cerebral, newdata = TestingData_Adenovirus, type = "vote")
 PredResponse_Adenovirus <- predict(RF_Cerebral, TestingData_Adenovirus, type="response")
 
-ROCTest <- roc(ClassDHFvsDF, PredVotes_Adenovirus[,2], plot = F, print.auc = TRUE, levels = c("DF", "DHF"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest <- roc(ClassAdenoVsNormal, PredVotes_Adenovirus[,2], plot = F, print.auc = TRUE, levels = c("control", "AdenoVirus"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
 ROCTest
