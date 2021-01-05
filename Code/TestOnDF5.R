@@ -20,7 +20,7 @@ FeatData_Dengue5 <- fData(DengueDataset5)
 
 ## Expr_Dengue5
 head(rownames(Expr_Dengue5))
-rownames(Expr_Dengue5) <- FeatData_Dengue4$`Gene symbol`
+rownames(Expr_Dengue5) <- FeatData_Dengue5$`Gene symbol`
 summary(is.na(rownames(Expr_Dengue5)))
 #rownames(Expr_Dengue5) <- gsub("-","", rownames(Expr_Dengue5))
 #rownames(Expr_Dengue5) <- gsub("_","",rownames(Expr_Dengue5))
