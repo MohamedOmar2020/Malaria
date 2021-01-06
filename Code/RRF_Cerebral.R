@@ -15,6 +15,7 @@ library(patchwork)
 ## Load data
 load("./Objs/MalariaDataGood_NCvsC.rda")
 load("./Objs/CerebralExtraValidation.rda")
+load("./Objs/CerebralExtraValidation2.rda")
 
 # Quantile normalization
 usedTrainMat <- normalizeBetweenArrays(mixTrainMat, method = "quantile")
@@ -162,6 +163,29 @@ sscurves_Test_Cerebral2 <- evalmod(scores = PredVotes_Test2[,2], labels = ClassC
 sscurves_Test_Cerebral2
 ROC_Test_Cerebral2 <- autoplot(sscurves_Test_Cerebral2, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in the 2nd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.87"), size = 5)
 PRC_Test_Cerebral2 <- autoplot(sscurves_Test_Cerebral2, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in the 2nd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.82"), size = 5)
+
+######################################################################
+## Predict in the testing data3
+TestingData_Filt3 <- t(Expr_Test3[Sel, ])
+
+PredVotes_Test3 <- predict(RF_Cerebral, newdata = TestingData_Filt3, type = "vote")
+PredResponse_Test3 <- predict(RF_Cerebral, TestingData_Filt3, type="response")
+
+ROCTest3 <- roc(ClassCerebralVsNonCerebral3, PredVotes_Test3[,2], plot = F, print.auc = TRUE, levels = c("nonCerebral", "cerebral" ), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest3
+
+### Resubstitution performance in the Test set
+ConfusionTest3 <- confusionMatrix(PredResponse_Test3, ClassCerebralVsNonCerebral3, positive = "cerebral", mode = "everything")
+ConfusionTest3
+
+MCC_Test3 <- mltools::mcc(pred = PredResponse_Test3, actuals = ClassCerebralVsNonCerebral3)
+MCC_Test3
+
+# For ROC and PRC curves
+sscurves_Test_Cerebral3 <- evalmod(scores = PredVotes_Test3[,2], labels = ClassCerebralVsNonCerebral3)
+sscurves_Test_Cerebral3
+ROC_Test_Cerebral3 <- autoplot(sscurves_Test_Cerebral3, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in the 3rd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 1"), size = 5)
+PRC_Test_Cerebral3 <- autoplot(sscurves_Test_Cerebral3, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in the 3rd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 1"), size = 5)
 
 
 

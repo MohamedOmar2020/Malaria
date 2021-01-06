@@ -15,6 +15,7 @@ library(precrec)
 ## Load data
 load("./Objs/MalariaDataGood_Comp.rda")
 load("./Objs/CompExtraValidation.rda")
+load("./Objs/CompExtraValidation2.rda")
 
 # Quantile normalization
 usedTrainMat <- normalizeBetweenArrays(mixTrainMat, method = "quantile")
@@ -152,17 +153,41 @@ ROCTest2 <- roc(ClassComplicatedVSunComplicated, PredVotes_Test2[,2], plot = F, 
 ROCTest2
 
 ### Resubstitution performance in the Test set
-ConfusionTest <- confusionMatrix(PredResponse_Test2, ClassComplicatedVSunComplicated, positive = "Complicated", mode = "everything")
-ConfusionTest
+ConfusionTest2<- confusionMatrix(PredResponse_Test2, ClassComplicatedVSunComplicated, positive = "Complicated", mode = "everything")
+ConfusionTest2
 
-MCC_Test <- mltools::mcc(pred = PredResponse_Test2, actuals = ClassComplicatedVSunComplicated)
-MCC_Test
+MCC_Test2 <- mltools::mcc(pred = PredResponse_Test2, actuals = ClassComplicatedVSunComplicated)
+MCC_Test2
 
 # For ROC and PRC curves
 sscurves_Test_Comp2 <- evalmod(scores = PredVotes_Test2[,2], labels = ClassComplicatedVSunComplicated)
 sscurves_Test_Comp2
 ROC_Test_Comp2 <- autoplot(sscurves_Test_Comp2, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in the 2nd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.85"), size = 5)
 PRC_Test_Comp2 <- autoplot(sscurves_Test_Comp2, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in the 2nd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.90"), size = 5)
+
+######################################################################
+## Predict in the testing data3
+TestingData_Filt3 <- t(Expr_Test3[Sel, ])
+
+PredVotes_Test3 <- predict(RF_Comp, newdata = TestingData_Filt3, type = "vote")
+PredResponse_Test3 <- predict(RF_Comp, TestingData_Filt3, type="response")
+
+ROCTest3 <- roc(ClassComplicatedVSunComplicated3, PredVotes_Test3[,2], plot = F, print.auc = TRUE, levels = c("unComplicated", "Complicated"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest3
+
+### Resubstitution performance in the Test set
+ConfusionTest3 <- confusionMatrix(PredResponse_Test3, ClassComplicatedVSunComplicated3, positive = "Complicated", mode = "everything")
+ConfusionTest3
+
+MCC_Test3 <- mltools::mcc(pred = PredResponse_Test3, actuals = ClassComplicatedVSunComplicated3)
+MCC_Test3
+
+# For ROC and PRC curves
+sscurves_Test_Comp3 <- evalmod(scores = PredVotes_Test3[,2], labels = ClassComplicatedVSunComplicated3)
+sscurves_Test_Comp3
+ROC_Test_Comp3 <- autoplot(sscurves_Test_Comp3, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in the 3rd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 1"), size = 5)
+PRC_Test_Comp3 <- autoplot(sscurves_Test_Comp3, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in the 3rd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 1"), size = 5)
+
 
 
 #######################################################################################
