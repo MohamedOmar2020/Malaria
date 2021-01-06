@@ -14,6 +14,7 @@ library(patchwork)
 
 ## Load data
 load("./Objs/MalariaDataGood_NCvsC.rda")
+load("./Objs/CerebralExtraValidation.rda")
 
 # Quantile normalization
 usedTrainMat <- normalizeBetweenArrays(mixTrainMat, method = "quantile")
@@ -93,11 +94,14 @@ sampsizes <- rep(min_size,num_classes)
 
 ################
 ## Build the random forest model
+set.seed(333)
 RF_Cerebral <- tuneRF(x = PredictorData_Filt, y = usedTrainGroup, mtryStart = 1, ntreeTry=500, stepFactor = 1, improve=0.05, trace=F, plot=F, doBest=T, sampsize = sampsizes)
 RF_Cerebral
 
 # save the model
 save(RF_Cerebral, file = "./Objs/RF_Cerebral.rda")
+
+load("./Objs/RF_Cerebral.rda")
 ################
 # Predict in the training data
 PredVotes_Train <- predict(RF_Cerebral, newdata = PredictorData_Filt, type = "vote")
@@ -135,6 +139,34 @@ sscurves_Test_Cerebral
 ROC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in the testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.98"), size = 5)
 PRC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in the testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.98"), size = 5)
 
+
+######################################################################
+## Predict in the testing data2
+TestingData_Filt2 <- t(Expr_Test2[Sel, ])
+
+PredVotes_Test2 <- predict(RF_Cerebral, newdata = TestingData_Filt2, type = "vote")
+PredResponse_Test2 <- predict(RF_Cerebral, TestingData_Filt2, type="response")
+
+ROCTest2 <- roc(ClassCerebralVsNonCerebral, PredVotes_Test2[,2], plot = F, print.auc = TRUE, levels = c("nonCerebral", "cerebral" ), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest2
+
+### Resubstitution performance in the Test set
+ConfusionTest <- confusionMatrix(PredResponse_Test2, ClassCerebralVsNonCerebral, positive = "cerebral", mode = "everything")
+ConfusionTest
+
+MCC_Test <- mltools::mcc(pred = PredResponse_Test2, actuals = ClassCerebralVsNonCerebral)
+MCC_Test
+
+# For ROC and PRC curves
+sscurves_Test_Cerebral2 <- evalmod(scores = PredVotes_Test2[,2], labels = ClassCerebralVsNonCerebral)
+sscurves_Test_Cerebral2
+ROC_Test_Cerebral2 <- autoplot(sscurves_Test_Cerebral2, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in the 2nd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.87"), size = 5)
+PRC_Test_Cerebral2 <- autoplot(sscurves_Test_Cerebral2, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in the 2nd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.82"), size = 5)
+
+
+
+
+########################################################################
 # Load the 2 curves of the complicated malaria signature
 load("./Objs/Comp_Curves.rda")
 ##############################################

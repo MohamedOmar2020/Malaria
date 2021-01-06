@@ -14,6 +14,7 @@ library(precrec)
 
 ## Load data
 load("./Objs/MalariaDataGood_Comp.rda")
+load("./Objs/CompExtraValidation.rda")
 
 # Quantile normalization
 usedTrainMat <- normalizeBetweenArrays(mixTrainMat, method = "quantile")
@@ -100,6 +101,8 @@ RF_Comp
 
 # Save the model
 save(RF_Comp, file = "./Objs/RF_Comp.rda")
+
+load("./Objs/RF_Comp.rda")
 ################
 # Predict in the training data
 PredVotes_Train <- predict(RF_Comp, newdata = PredictorData_Filt, type = "vote")
@@ -137,13 +140,33 @@ sscurves_Test_Comp
 ROC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in the testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.85"), size = 5)
 PRC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in the testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.95"), size = 5)
 
+#######################################################################################
+######################################################################
+## Predict in the testing data2
+TestingData_Filt2 <- t(Expr_Test2[Sel, ])
+
+PredVotes_Test2 <- predict(RF_Comp, newdata = TestingData_Filt2, type = "vote")
+PredResponse_Test2 <- predict(RF_Comp, TestingData_Filt2, type="response")
+
+ROCTest2 <- roc(ClassComplicatedVSunComplicated, PredVotes_Test2[,2], plot = F, print.auc = TRUE, levels = c("unComplicated", "Complicated"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest2
+
+### Resubstitution performance in the Test set
+ConfusionTest <- confusionMatrix(PredResponse_Test2, ClassComplicatedVSunComplicated, positive = "Complicated", mode = "everything")
+ConfusionTest
+
+MCC_Test <- mltools::mcc(pred = PredResponse_Test2, actuals = ClassComplicatedVSunComplicated)
+MCC_Test
+
+# For ROC and PRC curves
+sscurves_Test_Comp2 <- evalmod(scores = PredVotes_Test2[,2], labels = ClassComplicatedVSunComplicated)
+sscurves_Test_Comp2
+ROC_Test_Comp2 <- autoplot(sscurves_Test_Comp2, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in the 2nd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.85"), size = 5)
+PRC_Test_Comp2 <- autoplot(sscurves_Test_Comp2, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in the 2nd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.90"), size = 5)
+
+
+#######################################################################################
 save(ROC_Test_Comp, PRC_Test_Comp, file = "./Objs/Comp_Curves.rda")
 ###################3
-# RandomForest calculates an importance measures for each variable.
-RF_Comp_importances <- randomForest::importance(RF_Comp, scale=F)
-# RF_Comp_importances <- rf_importances[order(rf_importances[,4], decreasing = TRUE), ]
-# rf_importances <- rf_importances[!(rf_importances[,4] == 0), ]
-# #MechanisticRF_Pairs <- rownames(rf_importances)[1:50]
-# #save(MechanisticRF_Pairs, file = "./Objs/RF/MechanisticRF_Pairs.rda")
 ###########################
 
