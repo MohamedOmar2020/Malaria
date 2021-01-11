@@ -556,7 +556,15 @@ allStudies <- names(allGroup)
 names(allGroup) <- colnames(allMat)
 all(colnames(allMat) == names(allGroup))
 
-#save(allMat, file = "./Objs/AllMat.rda")
+
+AllMat_Annot <- cbind(t(allMat), allGroup)
+AllMat_Annot <- as.data.frame(AllMat_Annot)
+colnames(AllMat_Annot)[ncol(AllMat_Annot)] <- "ComplicationStatus"
+AllMat_Annot$ComplicationStatus <- as.factor(AllMat_Annot$ComplicationStatus)
+levels(AllMat_Annot$ComplicationStatus) <- c("unComplicated", "Complicated")
+table(AllMat_Annot$ComplicationStatus)
+
+save(AllMat_Annot, file = "./Objs/AllMat_Annot.rda")
 #############################################################
 ### WBC count
 

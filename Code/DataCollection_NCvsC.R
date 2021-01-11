@@ -550,6 +550,14 @@ allStudies <- names(allGroup)
 names(allGroup) <- colnames(allMat)
 all(colnames(allMat) == names(allGroup))
 
+
+load("./Objs/AllMat_Annot.rda")
+
+AllMat_Annot$CerebralStatus <- allGroup
+table(AllMat_Annot$CerebralStatus)
+table(AllMat_Annot$ComplicationStatus)
+
+save(AllMat_Annot, file = "./Objs/AllMat_Annot.rda")
 #############################################################
 ### WBC count
 

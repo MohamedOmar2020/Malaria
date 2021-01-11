@@ -11,11 +11,12 @@ require(limma)
 library(randomForest)
 library(boot)
 library(precrec)
+library(pheatmap)
 
 ## Load data
 load("./Objs/MalariaDataGood_Comp.rda")
-load("./Objs/CompExtraValidation.rda")
-load("./Objs/CompExtraValidation2.rda")
+#load("./Objs/CompExtraValidation.rda")
+#load("./Objs/CompExtraValidation2.rda")
 
 # Quantile normalization
 usedTrainMat <- normalizeBetweenArrays(mixTrainMat, method = "quantile")
@@ -40,21 +41,21 @@ names(DataTrain) <- make.names(names(DataTrain))
 lambda <- 0.8 # Both the number of features and the quality of the features are quite sensitive to lambda for RRF. A smaller lambda leads to fewer features.
 
 # The function for bootstraping
-RF_Strap <- function(data, indices) {
-  d <- data[indices, ] # allows boot to select sample
-  rrf <- RRF(usedTrainGroup~., data = d, flagReg = 1, coefReg=lambda) # coefReg is a constant for all variables.   #either "X,as.factor(class)" or data frame like "Y~., data=data" is fine, but the later one is significantly slower. 
-  TrainData <- d
-  TrainData$usedTrainGroup <- NULL
-  subsetRRF <- rrf$feaSet
-  SelFeats <- colnames(TrainData[, subsetRRF])
-  return(as.vector(SelFeats[1:30]))
-}
-
-set.seed(333)
-bootobject_Comp <- boot(data = DataTrain, statistic = RF_Strap, R = 100, parallel = "multicore", ncpus = 15) 
-
-
-save(bootobject_Comp, file = "./Objs/bootobject_Comp.rda")
+# RF_Strap <- function(data, indices) {
+#   d <- data[indices, ] # allows boot to select sample
+#   rrf <- RRF(usedTrainGroup~., data = d, flagReg = 1, coefReg=lambda) # coefReg is a constant for all variables.   #either "X,as.factor(class)" or data frame like "Y~., data=data" is fine, but the later one is significantly slower. 
+#   TrainData <- d
+#   TrainData$usedTrainGroup <- NULL
+#   subsetRRF <- rrf$feaSet
+#   SelFeats <- colnames(TrainData[, subsetRRF])
+#   return(as.vector(SelFeats[1:30]))
+# }
+# 
+# set.seed(333)
+# bootobject_Comp <- boot(data = DataTrain, statistic = RF_Strap, R = 100, parallel = "multicore", ncpus = 15) 
+# 
+# 
+# save(bootobject_Comp, file = "./Objs/bootobject_Comp.rda")
 
 load("./Objs/bootobject_Comp.rda")
 
@@ -77,6 +78,44 @@ sum_result$Gene <- rownames(sum_result)
 sum_result <- sum_result[sum_result$rep_rows >= 5, ]
 Sel <- sum_result$Gene
 Sel
+
+####################################
+# Frequency figure
+sum_result <- sum_result[order(sum_result$rep_rows, decreasing = T), ]
+
+png(filename = "./Figs/CompFrequency.png", width = 2000, height = 2000, res = 300)
+CompFreq <- ggplot(data=sum_result, aes(x=rep_rows, y=reorder(Gene, rep_rows))) +
+  geom_col(width=0.5) + 
+  scale_x_continuous(limits = c(0,10), breaks = 0:10) +
+  labs(y = "Gene", x = "Frequency", title = " Frequency of genes in the severe malaria signature")
+CompFreq
+dev.off()
+
+
+##################
+# Together with cerebral signature
+load("./Objs/CerebralFreqPlot.png")
+
+png(filename = "./Figs/CombinedFrequency.png", width = 2000, height = 2000, res = 300)
+CompFreq + CerebralFreq
+dev.off()
+
+
+########################################
+## Heatmap
+NewOrder <- order(usedTrainGroup)
+usedTrainGroup_ord <- usedTrainGroup[NewOrder]
+
+X <- usedTrainMat[Sel, ]
+
+X <- X[, NewOrder]
+
+Annot <- as.data.frame(usedTrainGroup_ord)
+rownames(Annot) <- names(usedTrainGroup_ord)
+
+png(filename = "./Figs/CompHeatmap.png", width = 2000, height = 1500, res = 300)
+pheatmap::pheatmap(X, annotation_col = Annot, cluster_cols = F, cluster_rows = F, show_colnames = F)
+dev.off()
 #####################################
 ## Use the selected features to build a new random forest model
 
@@ -138,8 +177,8 @@ MCC_Test
 # For ROC and PRC curves
 sscurves_Test_Comp <- evalmod(scores = PredVotes_Test[,2], labels = usedTestGroup)
 sscurves_Test_Comp
-ROC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in the testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.85"), size = 5)
-PRC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in the testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.95"), size = 5)
+ROC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("ROC")) + labs(title = "ROC curve 1st testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.85"), size = 5)
+PRC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("PRC")) + labs(title = "PRC curve 1st testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.95"), size = 5)
 
 #######################################################################################
 ######################################################################
@@ -162,8 +201,8 @@ MCC_Test2
 # For ROC and PRC curves
 sscurves_Test_Comp2 <- evalmod(scores = PredVotes_Test2[,2], labels = ClassComplicatedVSunComplicated)
 sscurves_Test_Comp2
-ROC_Test_Comp2 <- autoplot(sscurves_Test_Comp2, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in the 2nd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.85"), size = 5)
-PRC_Test_Comp2 <- autoplot(sscurves_Test_Comp2, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in the 2nd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.90"), size = 5)
+ROC_Test_Comp2 <- autoplot(sscurves_Test_Comp2, curvetype = c("ROC")) + labs(title = "ROC curve 2nd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.85"), size = 5)
+PRC_Test_Comp2 <- autoplot(sscurves_Test_Comp2, curvetype = c("PRC")) + labs(title = "PRC curve 2nd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.90"), size = 5)
 
 ######################################################################
 ## Predict in the testing data3
@@ -185,13 +224,64 @@ MCC_Test3
 # For ROC and PRC curves
 sscurves_Test_Comp3 <- evalmod(scores = PredVotes_Test3[,2], labels = ClassComplicatedVSunComplicated3)
 sscurves_Test_Comp3
-ROC_Test_Comp3 <- autoplot(sscurves_Test_Comp3, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in the 3rd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 1"), size = 5)
-PRC_Test_Comp3 <- autoplot(sscurves_Test_Comp3, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in the 3rd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 1"), size = 5)
+ROC_Test_Comp3 <- autoplot(sscurves_Test_Comp3, curvetype = c("ROC")) + labs(title = "ROC curve 3rd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 1"), size = 5)
+PRC_Test_Comp3 <- autoplot(sscurves_Test_Comp3, curvetype = c("PRC")) + labs(title = "PRC curve 3rd testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 1"), size = 5)
 
+#########################################################################
+## Combine testing data
+CommonGns <- intersect(rownames(usedTestMat), rownames(Expr_Test2))
+CommonGns <- intersect( CommonGns, rownames(Expr_Test3))
+usedTestMat <- usedTestMat[CommonGns, ]
+Expr_Test2 <- Expr_Test2[CommonGns, ]
+Expr_Test3 <- Expr_Test3[CommonGns, ]
+
+Expr_MetaTest <- cbind(usedTestMat, Expr_Test2, Expr_Test3)
+Expr_MetaTest <- normalizeBetweenArrays(Expr_MetaTest, method = "quantile")
+
+Pheno_MetaTest <- c(usedTestGroup, ClassComplicatedVSunComplicated, ClassComplicatedVSunComplicated3)
+table(Pheno_MetaTest)
+Pheno_MetaTest <- as.factor(Pheno_MetaTest)
+levels(Pheno_MetaTest) <- c("unComplicated", "Complicated")
+
+## Predict in the testing Meta data
+MetaTestingData_Filt <- t(Expr_MetaTest[Sel, ])
+
+PredVotes_MetaTest <- predict(RF_Comp, newdata = MetaTestingData_Filt, type = "vote")
+PredResponse_MetaTest <- predict(RF_Comp, MetaTestingData_Filt, type="response")
+
+ROC_MetaTest <- roc(Pheno_MetaTest, PredVotes_MetaTest[,2], plot = F, print.auc = TRUE, levels = c("unComplicated", "Complicated"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROC_MetaTest
+
+### Resubstitution performance in the Test set
+Confusion_MetaTest <- confusionMatrix(PredResponse_MetaTest, Pheno_MetaTest, positive = "Complicated", mode = "everything")
+Confusion_MetaTest
+
+MCC_MetaTest <- mltools::mcc(pred = PredResponse_MetaTest, actuals = Pheno_MetaTest)
+MCC_MetaTest
+
+# For ROC and PRC curves
+sscurves_MetaTest_Comp <- evalmod(scores = PredVotes_MetaTest[,2], labels = Pheno_MetaTest)
+sscurves_MetaTest_Comp
+ROC_MetaTest_Comp <- autoplot(sscurves_MetaTest_Comp, curvetype = c("ROC")) + labs(title = "ROC curve combined testing data") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.93"), size = 5)
+PRC_MetaTest_Comp <- autoplot(sscurves_MetaTest_Comp, curvetype = c("PRC")) + labs(title = "PRC curve combined testing data") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.97"), size = 5)
 
 
 #######################################################################################
-save(ROC_Test_Comp, PRC_Test_Comp, file = "./Objs/Comp_Curves.rda")
+## Make a combined figure for the paper
+png(filename = "./Figs/CompSignaturesPerformance.png", width = 1500, height = 1000, res = 100)
+((ROC_Test_Comp / PRC_Test_Comp + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
+    (ROC_Test_Comp2 / PRC_Test_Comp2 + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
+    (ROC_Test_Comp3 / PRC_Test_Comp3 + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
+    (ROC_MetaTest_Comp / PRC_MetaTest_Comp + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12)))
+) +
+  #plot_layout(widths = c(0.4, 1)) + 
+  plot_annotation(
+    title = 'The performance of the complicated malaria signature in the testing data',
+    tag_levels = c('A', '1'),
+    theme = theme(plot.title = element_text(size = 17, face = "bold"))
+  )
+dev.off()
+
 ###################3
 ###########################
 
