@@ -12,6 +12,8 @@ library(randomForest)
 library(boot)
 library(precrec)
 library(pheatmap)
+library(randomForestExplainer)
+library(inTrees)
 
 ## Load data
 load("./Objs/MalariaDataGood_Comp.rda")
@@ -133,14 +135,66 @@ num_classes <- length(tmp)
 min_size <- tmp[order(tmp,decreasing=FALSE)[1]]
 sampsizes <- rep(min_size,num_classes)
 
-################
+###########################
+## Explain the RF
+
+DataTrain <- cbind(PredictorData_Filt, usedTrainGroup)
+DataTrain <- as.data.frame(DataTrain)
+DataTrain$usedTrainGroup <- as.factor(DataTrain$usedTrainGroup)
+levels(DataTrain$usedTrainGroup) <- c("unComplicated", "Complicated")
+
+# MAke a violin plot
+library(tidyr)
+
+X <- pivot_longer(
+  DataTrain,
+  cols = 1:28,
+  names_to = "Gene",
+  names_repair = "check_unique",
+  values_to = "Expression",
+)
+
+png(filename = "./Figs/ComViolinPlot.png", width = 2000, height = 1200, res = 150)
+ggplot(X, 
+       aes(x = usedTrainGroup, 
+           y = Expression)) + 
+  geom_violin(aes(fill = usedTrainGroup),
+              scale = "count")+
+  #geom_jitter(width = 0.1, size = 0.2)+
+  facet_wrap(~Gene)
+dev.off()
+
+
+# set.seed(333)
+# tuneRF(x = PredictorData_Filt, y = usedTrainGroup, mtryStart = 1, ntreeTry = 500, stepFactor = 1, improve = 0.01, trace = F, plot = F)
+# 
+# set.seed(333)
+# RF <- randomForest(usedTrainGroup~., data = DataTrain, mtry = 1, ntree = 500, trace = F, plot = F, doBest = T, sampsize = sampsizes, importance = T)
+# RF
+# 
+# explain_forest(RF, interactions = TRUE, data = DataTrain)
+
+
+##################################
 ## Build the random forest model
 set.seed(333)
 RF_Comp <- tuneRF(x = PredictorData_Filt, y = usedTrainGroup, mtryStart = 1, ntreeTry=500, stepFactor = 1, improve=0.05, trace=F, plot=F, doBest=T, sampsize = sampsizes)
 RF_Comp
 
+# treeList <- RF2List(RF_Comp)  # transform rf object to an inTrees' format
+# exec <- extractRules(treeList, PredictorData_Filt)  # R-executable conditions
+# exec[1:2,]
+# 
+# ruleMetric <- getRuleMetric(exec,PredictorData_Filt,usedTrainGroup)  # get rule metrics
+# ruleMetric[1:2,]
+# 
+# readableRules <- presentRules(ruleMetric, colnames(PredictorData_Filt))
+# readableRules[1:2, ]
+# 
+# freqPattern <- getFreqPattern(ruleMetric)
+
 # Save the model
-save(RF_Comp, file = "./Objs/RF_Comp.rda")
+#save(RF_Comp, file = "./Objs/RF_Comp.rda")
 
 load("./Objs/RF_Comp.rda")
 ################
