@@ -83,41 +83,41 @@ Sel
 
 ####################################
 # Frequency figure
-sum_result <- sum_result[order(sum_result$rep_rows, decreasing = T), ]
-
-png(filename = "./Figs/CompFrequency.png", width = 2000, height = 2000, res = 300)
-CompFreq <- ggplot(data=sum_result, aes(x=rep_rows, y=reorder(Gene, rep_rows))) +
-  geom_col(width=0.5) + 
-  scale_x_continuous(limits = c(0,10), breaks = 0:10) +
-  labs(y = "Gene", x = "Frequency", title = " Frequency of genes in the severe malaria signature")
-CompFreq
-dev.off()
+# sum_result <- sum_result[order(sum_result$rep_rows, decreasing = T), ]
+# 
+# png(filename = "./Figs/CompFrequency.png", width = 2000, height = 2000, res = 300)
+# CompFreq <- ggplot(data=sum_result, aes(x=rep_rows, y=reorder(Gene, rep_rows))) +
+#   geom_col(width=0.5) + 
+#   scale_x_continuous(limits = c(0,10), breaks = 0:10) +
+#   labs(y = "Gene", x = "Frequency", title = " Frequency of genes in the severe malaria signature")
+# CompFreq
+# dev.off()
 
 
 ##################
 # Together with cerebral signature
-load("./Objs/CerebralFreqPlot.png")
-
-png(filename = "./Figs/CombinedFrequency.png", width = 2000, height = 2000, res = 300)
-CompFreq + CerebralFreq
-dev.off()
+# load("./Objs/CerebralFreqPlot.png")
+# 
+# png(filename = "./Figs/CombinedFrequency.png", width = 2000, height = 2000, res = 300)
+# CompFreq + CerebralFreq
+# dev.off()
 
 
 ########################################
 ## Heatmap
-NewOrder <- order(usedTrainGroup)
-usedTrainGroup_ord <- usedTrainGroup[NewOrder]
-
-X <- usedTrainMat[Sel, ]
-
-X <- X[, NewOrder]
-
-Annot <- as.data.frame(usedTrainGroup_ord)
-rownames(Annot) <- names(usedTrainGroup_ord)
-
-png(filename = "./Figs/CompHeatmap.png", width = 2000, height = 1500, res = 300)
-pheatmap::pheatmap(X, annotation_col = Annot, cluster_cols = F, cluster_rows = F, show_colnames = F)
-dev.off()
+# NewOrder <- order(usedTrainGroup)
+# usedTrainGroup_ord <- usedTrainGroup[NewOrder]
+# 
+# X <- usedTrainMat[Sel, ]
+# 
+# X <- X[, NewOrder]
+# 
+# Annot <- as.data.frame(usedTrainGroup_ord)
+# rownames(Annot) <- names(usedTrainGroup_ord)
+# 
+# png(filename = "./Figs/CompHeatmap.png", width = 2000, height = 1500, res = 300)
+# pheatmap::pheatmap(X, annotation_col = Annot, cluster_cols = F, cluster_rows = F, show_colnames = F)
+# dev.off()
 #####################################
 ## Use the selected features to build a new random forest model
 
@@ -138,31 +138,31 @@ sampsizes <- rep(min_size,num_classes)
 ###########################
 ## Explain the RF
 
-DataTrain <- cbind(PredictorData_Filt, usedTrainGroup)
-DataTrain <- as.data.frame(DataTrain)
-DataTrain$usedTrainGroup <- as.factor(DataTrain$usedTrainGroup)
-levels(DataTrain$usedTrainGroup) <- c("unComplicated", "Complicated")
-
-# MAke a violin plot
-library(tidyr)
-
-X <- pivot_longer(
-  DataTrain,
-  cols = 1:28,
-  names_to = "Gene",
-  names_repair = "check_unique",
-  values_to = "Expression",
-)
-
-png(filename = "./Figs/ComViolinPlot.png", width = 2000, height = 1200, res = 150)
-ggplot(X, 
-       aes(x = usedTrainGroup, 
-           y = Expression)) + 
-  geom_violin(aes(fill = usedTrainGroup),
-              scale = "count")+
-  #geom_jitter(width = 0.1, size = 0.2)+
-  facet_wrap(~Gene)
-dev.off()
+# DataTrain <- cbind(PredictorData_Filt, usedTrainGroup)
+# DataTrain <- as.data.frame(DataTrain)
+# DataTrain$usedTrainGroup <- as.factor(DataTrain$usedTrainGroup)
+# levels(DataTrain$usedTrainGroup) <- c("unComplicated", "Complicated")
+# 
+# # MAke a violin plot
+# library(tidyr)
+# 
+# X <- pivot_longer(
+#   DataTrain,
+#   cols = 1:28,
+#   names_to = "Gene",
+#   names_repair = "check_unique",
+#   values_to = "Expression",
+# )
+# 
+# png(filename = "./Figs/ComViolinPlot.png", width = 2000, height = 1200, res = 150)
+# ggplot(X, 
+#        aes(x = usedTrainGroup, 
+#            y = Expression)) + 
+#   geom_violin(aes(fill = usedTrainGroup),
+#               scale = "count")+
+#   #geom_jitter(width = 0.1, size = 0.2)+
+#   facet_wrap(~Gene)
+# dev.off()
 
 
 # set.seed(333)

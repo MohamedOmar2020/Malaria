@@ -32,6 +32,24 @@ usedTestMat <- normalizeBetweenArrays(mixTestMat, method = "quantile")
 usedTrainGroup <- mixTrainGroup
 usedTestGroup <- mixTestGroup
 
+# Load mechanistic pairs
+Up <- c("ZNF148", "SF3B1", "STK17B", "TRA2A", "LIFR", "DNALI1", "CREM", "SLC25A40", "CBX5", "SLC38A2")
+Down <- c("ATP5G3", "IDH1", "TBCD", "HDAC5", "ORC2", "CHAF1A", "PLXNA2", "MAP2K7", "TBC1D2B", "XDH", "MBTD1", "PAPPA2", "CNOT7", "SCML1", "ADAP2", "ZCCHC2", "AGPAT3", "USP48")
+
+myTSPs <- expand.grid(Up, Down)
+myTSPs <- as.matrix(myTSPs)
+colnames(myTSPs) <- c("Up", "Down")
+
+### Common genes
+keepGns <- intersect(as.vector(myTSPs), rownames(usedTrainMat))
+
+#UsedTrainMat <- UsedTrainMat[keepGns, ]
+#UsedTestMat <- UsedTestMat[keepGns, ]
+
+### For the TSP
+myTSPs <- myTSPs[myTSPs[,1] %in% keepGns & myTSPs[,2] %in% keepGns , ]
+
+
 ###########################################################################
 ### TRAINING using restricted pairs
 ###########################################################################
@@ -44,13 +62,14 @@ featNo <- nrow(usedTrainMat)
 set.seed(333)
 
 ktspPredictorRes <- SWAP.Train.KTSP(
-  usedTrainMat, usedTrainGroup, krange=ktsp, featureNo= featNo, 
-  FilterFunc = SWAP.Filter.Wilcoxon)
+  usedTrainMat, usedTrainGroup, krange=8, featureNo= featNo, 
+  FilterFunc = SWAP.Filter.Wilcoxon, RestrictedPairs = myTSPs)
 
 ktspPredictorRes
 
-save(ktspPredictorRes, file = "./Objs/KTSP_Model.rda")
-load("./Objs/KTSP_Model.rda")
+#save(ktspPredictorRes, file = "./Objs/KTSP_Model.rda")
+#load("./Objs/KTSP_Model.rda")
+
 #Mechanistic_KTSP <- cbind(ktspPredictorRes$TSPs, ktspPredictorRes$score)
 #colnames(Mechanistic_KTSP) <- c("gene1", "gene2", "score")
 
