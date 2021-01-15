@@ -2,10 +2,10 @@ rm(list = ls())
 
 library(GEOquery)
 
-TB2 <- getGEO("GSE73408", GSEMatrix = T, AnnotGPL = T)
-TB2 <- TB2$GSE73408_series_matrix.txt.gz
-
-save(TB2, file = "./Data/TB2.rda")
+# TB2 <- getGEO("GSE73408", GSEMatrix = T, AnnotGPL = T)
+# TB2 <- TB2$GSE73408_series_matrix.txt.gz
+# 
+# save(TB2, file = "./Data/TB2.rda")
 
 load("./Data/TB2.rda")
 
@@ -79,7 +79,7 @@ load("./Objs/RF_Cerebral.rda")
 
 #################
 ## Predict in the WestNile dataset (DHF vs DF)
-
+RF_Cerebral$importance <- RF_Cerebral$importance[rownames(RF_Cerebral$importance) %in% rownames(Expr_TB2), ]
 #TestingData_ManyInfections <- t(Expr_TB2)
 
 PredVotes_TB2 <- predict(RF_Cerebral, newdata = TestingData_TB2, type = "vote")

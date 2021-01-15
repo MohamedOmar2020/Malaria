@@ -2,10 +2,10 @@ rm(list = ls())
 
 library(GEOquery)
 
-HIVandTB <- getGEO("GSE39940", GSEMatrix = T, AnnotGPL = T)
-HIVandTB <- HIVandTB$GSE39940_series_matrix.txt.gz
-
-save(HIVandTB, file = "./Data/HIVandTB.rda")
+# HIVandTB <- getGEO("GSE39940", GSEMatrix = T, AnnotGPL = T)
+# HIVandTB <- HIVandTB$GSE39940_series_matrix.txt.gz
+# 
+# save(HIVandTB, file = "./Data/HIVandTB.rda")
 
 load("./Data/HIVandTB.rda")
 

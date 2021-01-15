@@ -35,31 +35,36 @@ load("./Objs/HIVandTB_Curves.rda")
 load("./Objs/WestNile1_Curves.rda")
 
 #############################################
-ROC_Dengue$labels$title <- "GSE51808"
-ROC_Dengue2$labels$title <- "GSE96656"
-ROC_Dengue3$labels$title <- "GSE25001"  
-ROC_Dengue4$labels$title <- "GSE18090"
-ROC_Dengue5$labels$title <- "GSE17924"
-ROC_Dengue6$labels$title <- "GSE13052"
+ROC_Dengue$labels$title <- "GSE51808 (DF vs healthy)"
+ROC_Dengue2$labels$title <- "GSE96656 (DF vs healthy)"
+ROC_Dengue3$labels$title <- "GSE25001 (un-complicated vs complicated DF)"  
+ROC_Dengue4$labels$title <- "GSE18090 (DF vs healthy)"
+ROC_Dengue5$labels$title <- "GSE17924 (un-complicated vs complicated DF)"
+ROC_Dengue6$labels$title <- "GSE13052 (un-complicated vs complicated DF)"
 
 
-ROC_Adenovirus$labels$title <- "GSE40396"
-ROC_ManyInfections1$labels$title <- "GSE42026"
-ROC_ManyInfections2$labels$title <- "GSE6269-GPL96"
-ROC_ManyInfections3$labels$title <- "GSE63990"
+ROC_Adenovirus$labels$title <- "GSE40396 (Bacterial and viral infections vs healthy)"
+ROC_Adenovirus$theme$plot.title$size <- 10
+ROC_ManyInfections1$labels$title <- "GSE42026 (Bacterial and viral infections vs healthy)"
+ROC_ManyInfections1$theme$plot.title$size <- 10
+ROC_ManyInfections2$labels$title <- "GSE6269-GPL96 (Bacterial and viral infections vs healthy)"
+ROC_ManyInfections2$theme$plot.title$size <- 10
+ROC_ManyInfections3$labels$title <- "GSE63990 (Bacterial and viral infections vs healthy)"
+ROC_ManyInfections3$theme$plot.title$size <- 10
 
 ROC_TB1$labels$title <- "GSE19444"
 ROC_TB2$labels$title <- "GSE73408"
 ROC_TB3$labels$title <- "GSE62525"
 ROC_TB4$labels$title <- "GSE83456"
 
-ROC_HIVandTB$labels$title <- "GSE39940 (HIV and TB)"
-ROC_WestNile$labels$title <- "GSE46681 (West Nile)"
-
+ROC_HIVandTB$labels$title <- "GSE39940 (HIV/TB vs healthy)"
+ROC_HIVandTB$theme$plot.title$size <- 10
+ROC_WestNile$labels$title <- "GSE46681 (Asymptomatic vs severe West Nile viral infection)"
+ROC_WestNile$theme$plot.title$size <- 10
 ##############################################
 ## Dengue Fever
 png(filename = "./Figs/CompMalariaSigPerformance_Dengue.png", width = 1500, height = 1000, res = 100)
-(ROC_Dengue / ROC_Dengue2 | ROC_Dengue3 / ROC_Dengue4 | ROC_Dengue5 / ROC_Dengue6 & theme(plot.tag = element_text(size = 12))
+(ROC_Dengue / ROC_Dengue2 | ROC_Dengue4 / ROC_Dengue3 | ROC_Dengue5 / ROC_Dengue6 & theme(plot.tag = element_text(size = 12))
 ) +
   #plot_layout(widths = c(0.4, 1)) + 
   plot_annotation(

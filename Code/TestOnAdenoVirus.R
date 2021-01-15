@@ -5,10 +5,10 @@ rm(list = ls())
 
 library(GEOquery)
 
-AdenovirusDataset1 <- getGEO("GSE40396", GSEMatrix = T, AnnotGPL = T)
-AdenovirusDataset1 <- AdenovirusDataset1$GSE40396_series_matrix.txt.gz
-
-save(AdenovirusDataset1, file = "./Data/AdenovirusDataset1.rda")
+# AdenovirusDataset1 <- getGEO("GSE40396", GSEMatrix = T, AnnotGPL = T)
+# AdenovirusDataset1 <- AdenovirusDataset1$GSE40396_series_matrix.txt.gz
+# 
+# save(AdenovirusDataset1, file = "./Data/AdenovirusDataset1.rda")
 
 load("./Data/AdenovirusDataset1.rda")
 
@@ -122,5 +122,5 @@ load("./Objs/RF_Cerebral.rda")
 PredVotes_Adenovirus <- predict(RF_Cerebral, newdata = TestingData_Adenovirus, type = "vote")
 PredResponse_Adenovirus <- predict(RF_Cerebral, TestingData_Adenovirus, type="response")
 
-ROCTest <- roc(ClassAdenoVsNormal, PredVotes_Adenovirus[,2], plot = F, print.auc = TRUE, levels = c("control", "AdenoVirus"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest <- roc(ClassInfectionVsNormal, PredVotes_Adenovirus[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
 ROCTest

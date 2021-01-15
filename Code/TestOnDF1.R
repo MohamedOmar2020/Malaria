@@ -113,6 +113,13 @@ PredResponse_Dengue <- predict(RF_Comp, TestingData_Dengue, type="response")
 ROCTest <- roc(ClassDHFvsDF, PredVotes_Dengue[,2], plot = F, print.auc = TRUE, levels = c("DF", "DHF"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
 ROCTest
 
+# For ROC and PRC curves
+sscurves_Dengue1 <- evalmod(scores = PredVotes_Dengue[,2], labels = ClassDHFvsDF)
+sscurves_Dengue1
+ROC_Dengue_DFvsDHF <- autoplot(sscurves_Dengue1, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE51808 (DF vs DHF)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.52"), size = 5)
+PRC_Dengue_DFvsDHF <- autoplot(sscurves_Dengue1, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE51808 (DF vs DHF)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.54"), size = 5)
+
+save(ROC_Dengue_DFvsDHF, PRC_Dengue_DFvsDHF, file = "./Objs/Dengue1_Curves_DFvsDHF.rda")
 
 ####################################
 ## Load the cerebral malaria

@@ -2,11 +2,11 @@ rm(list = ls())
 
 library(GEOquery)
 
-TB1 <- getGEO("GSE19444", GSEMatrix = T, AnnotGPL = T)
-TB1 <- TB1$GSE19444_series_matrix.txt.gz
-
-save(TB1, file = "./Data/TB1.rda")
-
+# TB1 <- getGEO("GSE19444", GSEMatrix = T, AnnotGPL = T)
+# TB1 <- TB1$GSE19444_series_matrix.txt.gz
+# 
+# save(TB1, file = "./Data/TB1.rda")
+# 
 load("./Data/TB1.rda")
 
 Expr_TB1 <- exprs(TB1)

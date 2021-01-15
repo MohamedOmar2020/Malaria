@@ -4,10 +4,10 @@ rm(list = ls())
 
 library(GEOquery)
 
-WestNileDataset1 <- getGEO("GSE46681", GSEMatrix = T, AnnotGPL = T)
-WestNileDataset1 <- WestNileDataset1$GSE46681_series_matrix.txt.gz
-
-save(WestNileDataset1, file = "./Data/WestNileDataset1.rda")
+# WestNileDataset1 <- getGEO("GSE46681", GSEMatrix = T, AnnotGPL = T)
+# WestNileDataset1 <- WestNileDataset1$GSE46681_series_matrix.txt.gz
+# 
+# save(WestNileDataset1, file = "./Data/WestNileDataset1.rda")
 
 load("./Data/WestNileDataset1.rda")
 

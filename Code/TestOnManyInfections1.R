@@ -3,10 +3,10 @@ rm(list = ls())
 
 library(GEOquery)
 
-ManyInfections1 <- getGEO("GSE42026", GSEMatrix = T, AnnotGPL = T)
-ManyInfections1 <- ManyInfections1$GSE42026_series_matrix.txt.gz
-
-save(ManyInfections1, file = "./Data/ManyInfections1.rda")
+# ManyInfections1 <- getGEO("GSE42026", GSEMatrix = T, AnnotGPL = T)
+# ManyInfections1 <- ManyInfections1$GSE42026_series_matrix.txt.gz
+# 
+# save(ManyInfections1, file = "./Data/ManyInfections1.rda")
 
 load("./Data/ManyInfections1.rda")
 

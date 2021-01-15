@@ -2,10 +2,10 @@ rm(list = ls())
 
 library(GEOquery)
 
-DengueDataset5 <- getGEO("GSE17924", GSEMatrix = T, AnnotGPL = T)
-DengueDataset5 <- DengueDataset5$GSE17924_series_matrix.txt.gz
-
-save(DengueDataset5, file = "./Data/DengueDataset5.rda")
+# DengueDataset5 <- getGEO("GSE17924", GSEMatrix = T, AnnotGPL = T)
+# DengueDataset5 <- DengueDataset5$GSE17924_series_matrix.txt.gz
+# 
+# save(DengueDataset5, file = "./Data/DengueDataset5.rda")
 
 load("./Data/DengueDataset5.rda")
 

@@ -2,10 +2,10 @@ rm(list = ls())
 
 library(GEOquery)
 
-TB3 <- getGEO("GSE62525", GSEMatrix = T, AnnotGPL = T)
-TB3 <- TB3$GSE62525_series_matrix.txt.gz
-
-save(TB3, file = "./Data/TB3.rda")
+# TB3 <- getGEO("GSE62525", GSEMatrix = T, AnnotGPL = T)
+# TB3 <- TB3$GSE62525_series_matrix.txt.gz
+# 
+# save(TB3, file = "./Data/TB3.rda")
 
 load("./Data/TB3.rda")
 
