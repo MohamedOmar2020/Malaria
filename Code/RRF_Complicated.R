@@ -87,8 +87,8 @@ Sel
 # 
 # png(filename = "./Figs/CompFrequency.png", width = 2000, height = 2000, res = 300)
 # CompFreq <- ggplot(data=sum_result, aes(x=rep_rows, y=reorder(Gene, rep_rows))) +
-#   geom_col(width=0.5) + 
-#   scale_x_continuous(limits = c(0,10), breaks = 0:10) +
+#   geom_col(width=0.5) +
+#   scale_x_continuous(limits = c(0,15), breaks = 0:15) +
 #   labs(y = "Gene", x = "Frequency", title = " Frequency of genes in the severe malaria signature")
 # CompFreq
 # dev.off()
@@ -98,7 +98,7 @@ Sel
 # Together with cerebral signature
 # load("./Objs/CerebralFreqPlot.png")
 # 
-# png(filename = "./Figs/CombinedFrequency.png", width = 2000, height = 2000, res = 300)
+# png(filename = "./Figs/CombinedFrequency.png", width = 3000, height = 1700, res = 200)
 # CompFreq + CerebralFreq
 # dev.off()
 

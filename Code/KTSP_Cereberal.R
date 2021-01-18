@@ -218,7 +218,7 @@ levels(dat_KTSP$KTSP_type) <- paste(levels(dat_KTSP$KTSP_type), forLegend_KTSP[c
 #################################################################
 ### Plot Curve
 png("./Figs/AUCggplot_Cerebral.png",
-    width=3000, height=3000, res=360)
+    width=3000, height=3000, res=300)
 ### Color
 myCol <- brewer.pal(3, "Dark2")[c(2,1)]
 ### Plot and legend titles
@@ -236,7 +236,7 @@ basicplot_KTSP <- ggplot(dat_KTSP, aes(d=Status, m=KTSP_sum, color=KTSP_type,
         legend.justification=c(1,0),  legend.position=c(1,0),
         legend.background=element_rect(fill="lightblue1"),
         legend.text=element_text(face="plain", size = 10),
-        legend.title = element_text(face="bold", size=12)) +
+        legend.title = element_text(face="bold", size=7)) +
   #scale_color_manual(legendTitle, values=rep(myCol, 2)) +
   #scale_linetype_manual(legendTitle, values=rep(c("solid", "dotted"), each=2)) +
   guides(colour = guide_legend(override.aes = list(size=3)))

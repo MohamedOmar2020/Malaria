@@ -80,12 +80,12 @@ Sel
 
 ####################################
 # Frequency plot
-# sum_result <- sum_result[order(sum_result$rep_rows, decreasing = T), ]
-# 
+sum_result <- sum_result[order(sum_result$rep_rows, decreasing = T), ]
+
 # png(filename = "./Figs/CerebralFrequency.png", width = 2000, height = 2000, res = 300)
 # CerebralFreq <- ggplot(data=sum_result, aes(x=rep_rows, y=reorder(Gene, rep_rows))) +
-#   geom_col(width=0.5) + 
-#   scale_x_continuous(limits = c(0,10), breaks = 0:10) +
+#   geom_col(width=0.5) +
+#   scale_x_continuous(limits = c(0,12), breaks = 0:10) +
 #   labs(y = "Gene", x = "Frequency", title = " Frequency of genes in the cerebral malaria signature")
 # CerebralFreq
 # dev.off()
