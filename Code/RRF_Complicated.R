@@ -14,10 +14,12 @@ library(precrec)
 library(pheatmap)
 library(randomForestExplainer)
 library(inTrees)
+library(pROC)
+library(caret)
 
 ## Load data
 load("./Objs/MalariaDataGood_Comp.rda")
-#load("./Objs/CompExtraValidation.rda")
+load("./Objs/PlacentalMalaria.rda")
 #load("./Objs/CompExtraValidation2.rda")
 
 # Quantile normalization
@@ -235,24 +237,70 @@ ROC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("ROC")) + labs(title
 PRC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("PRC")) + labs(title = "PRC curve 1st testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.95"), size = 5)
 
 #######################################################################################
+## Predict in the 2nd testing data 
+# Placental malaria vs non-placental malaria
+usedTestMat_Filt2 <- Expr_Test2[Sel, ]
+TestingData_Filt2 <- t(usedTestMat_Filt2)
 
+PredVotes_Test2 <- predict(RF_Comp, newdata = TestingData_Filt2, type = "vote")
+PredResponse_Test2 <- predict(RF_Comp, TestingData_Filt2, type="response")
+
+ROCTest2 <- roc(ClassComplicatedVSunComplicated, PredVotes_Test2[,2], plot = F, print.auc = TRUE, levels = c("unComplicated", "Complicated"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest2
+
+### Resubstitution peRF_Compormance in the Test set
+ConfusionTest2 <- confusionMatrix(PredResponse_Test2, ClassComplicatedVSunComplicated, positive = "Complicated", mode = "everything")
+ConfusionTest2
+
+MCC_Test2 <- mltools::mcc(pred = PredResponse_Test2, actuals = ClassComplicatedVSunComplicated)
+MCC_Test2
+
+# For ROC and PRC curves
+sscurves_PM <- evalmod(scores = PredVotes_Test2[,2], labels = ClassComplicatedVSunComplicated)
+sscurves_PM
+ROC_PM<- autoplot(sscurves_PM, curvetype = c("ROC")) + labs(title = "ROC curve PM +ve vs PM -ve") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.70"), size = 5)
+PRC_PM <- autoplot(sscurves_PM, curvetype = c("PRC")) + labs(title = "PRC curve PM +ve vs PM -ve") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.62"), size = 5)
+
+#######################################################################################
+## Predict in the 2nd testing data 
+# Inflammation vs no-inflammation
+usedTestMat_Filt2 <- Expr_Test2[Sel, ]
+TestingData_Filt2 <- t(usedTestMat_Filt2)
+
+PredVotes_Test2 <- predict(RF_Comp, newdata = TestingData_Filt2, type = "vote")
+PredResponse_Test2 <- predict(RF_Comp, TestingData_Filt2, type="response")
+
+ROCTest2 <- roc(ClassInflammation, PredVotes_Test2[,2], plot = F, print.auc = TRUE, levels = c("No", "Yes"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest2
+
+### Resubstitution peRF_Compormance in the Test set
+levels(ClassInflammation) <- c("unComplicated", "Complicated")
+ConfusionTest2 <- confusionMatrix(PredResponse_Test2, ClassInflammation, positive = "Complicated", mode = "everything")
+ConfusionTest2
+
+MCC_Test2 <- mltools::mcc(pred = PredResponse_Test2, actuals = ClassInflammation)
+MCC_Test2
+
+# For ROC and PRC curves
+sscurves_PM_Inflamm <- evalmod(scores = PredVotes_Test2[,2], labels = ClassInflammation)
+sscurves_PM_Inflamm
+ROC_PM_Inflamm <- autoplot(sscurves_PM_Inflamm, curvetype = c("ROC")) + labs(title = "ROC curve inflammation vs no inflammation") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.76"), size = 5)
+PRC_PM_Inflamm <- autoplot(sscurves_PM_Inflamm, curvetype = c("PRC")) + labs(title = "PRC curve inflammation vs no inflammation") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.60"), size = 5)
 
 #######################################################################################
 ## Make a combined figure for the paper
-png(filename = "./Figs/CompSignaturesPerformance.png", width = 1500, height = 1000, res = 100)
-((ROC_Test_Comp / PRC_Test_Comp + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
-    (ROC_Test_Comp2 / PRC_Test_Comp2 + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
-    (ROC_Test_Comp3 / PRC_Test_Comp3 + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
-    (ROC_MetaTest_Comp / PRC_MetaTest_Comp + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12)))
+png(filename = "./Figs/severeSignaturesPerformance_PM.png", width = 1500, height = 1000, res = 100)
+((ROC_PM / PRC_PM + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
+    (ROC_PM_Inflamm / PRC_PM_Inflamm + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12)))
 ) +
   #plot_layout(widths = c(0.4, 1)) + 
   plot_annotation(
-    title = 'The performance of the complicated malaria signature in the testing data',
+    title = 'The performance of the severe malaria signature in the placental malaria dataset',
     tag_levels = c('A', '1'),
     theme = theme(plot.title = element_text(size = 17, face = "bold"))
   )
 dev.off()
 
-###################3
+###################
 ###########################
 

@@ -15,7 +15,7 @@ library(ggThemeAssist)
 
 ## Load data
 load("./Objs/MalariaDataGood_NCvsC.rda")
-#load("./Objs/CerebralExtraValidation.rda")
+load("./Objs/PlacentalMalaria.rda")
 #load("./Objs/CerebralExtraValidation2.rda")
 
 # Quantile normalization
@@ -221,6 +221,59 @@ sscurves_Test_Cerebral <- evalmod(scores = PredVotes_Test[,2], labels = usedTest
 sscurves_Test_Cerebral
 ROC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("ROC")) + labs(title = "ROC curve 1st testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.98"), size = 5)
 PRC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("PRC")) + labs(title = "PRC curve 1st testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.98"), size = 5)
+
+
+#######################################################################################
+## Predict in the 2nd testing data 
+# Placental malaria vs non-placental malaria
+# usedTestMat_Filt2 <- Expr_Test2[Sel, ]
+# TestingData_Filt2 <- t(usedTestMat_Filt2)
+# 
+# PredVotes_Test2 <- predict(RF_Cerebral, newdata = TestingData_Filt2, type = "vote")
+# PredResponse_Test2 <- predict(RF_Cerebral, TestingData_Filt2, type="response")
+# 
+# ROCTest2 <- roc(ClassComplicatedVSunComplicated, PredVotes_Test2[,2], plot = F, print.auc = TRUE, levels = c("unComplicated", "Complicated"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+# ROCTest2
+# 
+# ### Resubstitution peRF_Compormance in the Test set
+# levels(ClassComplicatedVSunComplicated) <- c("nonCerebral", "cerebral")
+# ConfusionTest2 <- confusionMatrix(PredResponse_Test2, ClassComplicatedVSunComplicated, positive = "cerebral", mode = "everything")
+# ConfusionTest2
+# 
+# MCC_Test2 <- mltools::mcc(pred = PredResponse_Test2, actuals = ClassComplicatedVSunComplicated)
+# MCC_Test2
+# 
+# # For ROC and PRC curves
+# sscurves_PM <- evalmod(scores = PredVotes_Test2[,2], labels = ClassComplicatedVSunComplicated)
+# sscurves_PM
+# ROC_PM<- autoplot(sscurves_PM, curvetype = c("ROC")) + labs(title = "ROC curve PM +ve vs PM -ve") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.70"), size = 5)
+# PRC_PM <- autoplot(sscurves_PM, curvetype = c("PRC")) + labs(title = "PRC curve PM +ve vs PM -ve") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.62"), size = 5)
+# 
+# #######################################################################################
+# ## Predict in the 2nd testing data 
+# # Inflammation vs no-inflammation
+# usedTestMat_Filt2 <- Expr_Test2[Sel, ]
+# TestingData_Filt2 <- t(usedTestMat_Filt2)
+# 
+# PredVotes_Test2 <- predict(RF_Cerebral, newdata = TestingData_Filt2, type = "vote")
+# PredResponse_Test2 <- predict(RF_Cerebral, TestingData_Filt2, type="response")
+# 
+# ROCTest2 <- roc(ClassInflammation, PredVotes_Test2[,2], plot = F, print.auc = TRUE, levels = c("No", "Yes"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+# ROCTest2
+# 
+# ### Resubstitution peRF_Compormance in the Test set
+# levels(ClassInflammation) <- c("unComplicated", "Complicated")
+# ConfusionTest2 <- confusionMatrix(PredResponse_Test2, ClassInflammation, positive = "Complicated", mode = "everything")
+# ConfusionTest2
+# 
+# MCC_Test2 <- mltools::mcc(pred = PredResponse_Test2, actuals = ClassInflammation)
+# MCC_Test2
+# 
+# # For ROC and PRC curves
+# sscurves_PM_Inflamm <- evalmod(scores = PredVotes_Test2[,2], labels = ClassInflammation)
+# sscurves_PM_Inflamm
+# ROC_PM_Inflamm <- autoplot(sscurves_PM_Inflamm, curvetype = c("ROC")) + labs(title = "ROC curve inflammation vs no inflammation") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.76"), size = 5)
+# PRC_PM_Inflamm <- autoplot(sscurves_PM_Inflamm, curvetype = c("PRC")) + labs(title = "PRC curve inflammation vs no inflammation") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.60"), size = 5)
 
 ########################################################################
 ##############################################
