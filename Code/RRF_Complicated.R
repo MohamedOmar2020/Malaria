@@ -20,7 +20,7 @@ library(caret)
 ## Load data
 load("./Objs/MalariaDataGood_Comp.rda")
 load("./Objs/PlacentalMalaria.rda")
-#load("./Objs/CompExtraValidation2.rda")
+load("./Objs/ExtraMalaria.rda")
 
 # Quantile normalization
 usedTrainMat <- normalizeBetweenArrays(mixTrainMat, method = "quantile")
@@ -286,6 +286,32 @@ sscurves_PM_Inflamm <- evalmod(scores = PredVotes_Test2[,2], labels = ClassInfla
 sscurves_PM_Inflamm
 ROC_PM_Inflamm <- autoplot(sscurves_PM_Inflamm, curvetype = c("ROC")) + labs(title = "ROC curve inflammation vs no inflammation") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.76"), size = 5)
 PRC_PM_Inflamm <- autoplot(sscurves_PM_Inflamm, curvetype = c("PRC")) + labs(title = "PRC curve inflammation vs no inflammation") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.60"), size = 5)
+
+#################################################################
+#######################################################################################
+## Predict in the 2nd testing data 
+# mild vs severe malaria
+# usedTestMat_Filt3 <- Expr_Test3[Sel, ]
+# TestingData_Filt3 <- t(usedTestMat_Filt3)
+# 
+# PredVotes_Test3 <- predict(RF_Comp, newdata = TestingData_Filt3, type = "vote")
+# PredResponse_Test3 <- predict(RF_Comp, TestingData_Filt3, type="response")
+# 
+# ROCTest3 <- roc(ClassComplicatedVSunComplicated2, PredVotes_Test3[,2], plot = F, print.auc = TRUE, levels = c("unComplicated", "Complicated"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+# ROCTest3
+# 
+# ### Resubstitution peRF_Compormance in the Test set
+# ConfusionTest3 <- confusionMatrix(PredResponse_Test3, ClassComplicatedVSunComplicated2, positive = "Complicated", mode = "everything")
+# ConfusionTest3
+# 
+# MCC_Test3 <- mltools::mcc(pred = PredResponse_Test3, actuals = ClassInflammation)
+# MCC_Test3
+# 
+# # For ROC and PRC curves
+# sscurves_PM_Inflamm <- evalmod(scores = PredVotes_Test2[,2], labels = ClassInflammation)
+# sscurves_PM_Inflamm
+# ROC_PM_Inflamm <- autoplot(sscurves_PM_Inflamm, curvetype = c("ROC")) + labs(title = "ROC curve inflammation vs no inflammation") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.76"), size = 5)
+# PRC_PM_Inflamm <- autoplot(sscurves_PM_Inflamm, curvetype = c("PRC")) + labs(title = "PRC curve inflammation vs no inflammation") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.60"), size = 5)
 
 #######################################################################################
 ## Make a combined figure for the paper

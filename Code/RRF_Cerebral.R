@@ -97,13 +97,14 @@ sum_result <- sum_result[order(sum_result$rep_rows, decreasing = T), ]
 # NewOrder <- order(usedTrainGroup)
 # usedTrainGroup_ord <- usedTrainGroup[NewOrder]
 # 
+# GenesOrdered <- c("PUM2", "SETX", "RABEP1", "ELF2", "MORC2", "ZNF197", "KRIT1", "EPHA4", "USP34", "OGT", "XRCC5", "LARP4", "SCN2B", "CDH8", "VPS13B", "PPP6R3", "MREG", "TTC17", "THRB", "ATP5G3", "TRIP12", "MYH11", "ANK2", "CD53", "MAP3K13", "PGR", "DGKQ", "SPATS2L", "KPNA6", "CHRNA10", "ASB7", "C18orf8") 
 # X <- usedTrainMat[Sel, ]
-# 
-# X <- X[, NewOrder]
-# 
+# # 
+# X <- X[GenesOrdered, NewOrder]
+# # 
 # Annot <- as.data.frame(usedTrainGroup_ord)
 # rownames(Annot) <- names(usedTrainGroup_ord)
-# 
+# # 
 # png(filename = "./Figs/CerebralHeatmap.png", width = 2000, height = 1500, res = 300)
 # pheatmap::pheatmap(X, annotation_col = Annot, cluster_cols = F, cluster_rows = F, show_colnames = F)
 # dev.off()
