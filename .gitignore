@@ -5,3 +5,4 @@ Objs/
 renv/
 renv.lock
 .Rproj.user
+cache/
