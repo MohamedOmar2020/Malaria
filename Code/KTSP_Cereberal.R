@@ -108,11 +108,11 @@ coords(roc(usedTrainGroup, ktspStatsTrainRes$statistics, levels = c("nonCerebral
 
 ### Plot Curve: note that you must reorder the levels!!!
 ### ("good" goes first, "bad" goes second, the opposite of confusionMatrix)
-ROCTrain <- roc(usedTrainGroup, ktspStatsTrainRes$statistics, plot = F, print.thres=thr, print.auc=TRUE, print.auc.col="black", ci = T, levels = c("nonCerebral", "cerebral"), direction = "<", col="blue", lwd=2, grid=TRUE, main="Mechanistic KTSP performance in the training data")
+ROCTrain <- roc(usedTrainGroup, ktspStatsTrainRes$statistics, plot = T, print.thres=thr$threshold, print.auc=TRUE, print.auc.col="black", ci = T, levels = c("nonCerebral", "cerebral"), direction = "<", col="blue", lwd=2, grid=TRUE, main="Mechanistic KTSP performance in the training data")
 ROCTrain
 
 ### Get predictions based on best threshold from ROC curve
-usedTrainPredictionRes <- SWAP.KTSP.Classify(usedTrainMat, ktspPredictorRes, DecisionFunc = function(x) sum(x) >= 1.5)
+usedTrainPredictionRes <- SWAP.KTSP.Classify(usedTrainMat, ktspPredictorRes, DecisionFunc = function(x) sum(x) >= thr)
 
 ### Resubstitution performance in the TRAINING set
 ConfusionTrain <- confusionMatrix(usedTrainPredictionRes, usedTrainGroup, positive = "cerebral", mode = "everything")
@@ -148,7 +148,7 @@ summary(ktspStatsTestRes$statistics)
 #coords(roc(UsedTestGroup, ktspStatsTestRes$statistics, levels = c("Resistant", "Sensitive")), transpose = T, "local maximas")
 
 ## Plot curve
-ROCTest <- roc(usedTestGroup, ktspStatsTestRes$statistics, plot = F, print.thres=thr_test, print.auc=TRUE, print.auc.col="black", ci = T, levels = c("nonCerebral", "cerebral"), direction = "<", col="blue", lwd=2, grid=TRUE, main= "Mechanistic KTSP using TF_MiR Gns")
+ROCTest <- roc(usedTestGroup, ktspStatsTestRes$statistics, plot = T, print.thres=thr$threshold, print.auc=TRUE, print.auc.col="black", ci = T, levels = c("nonCerebral", "cerebral"), direction = "<", col="blue", lwd=2, grid=TRUE, main= "Mechanistic KTSP using TF_MiR Gns")
 ROCTest
 
 ### Get predictions based on best threshold from ROC curve
