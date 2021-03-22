@@ -68,8 +68,8 @@ ROCTest
 # For ROC and PRC curves
 sscurves_ManyInfections <- evalmod(scores = PredVotes_ManyInfections[,2], labels = ClassInfectionsVsHealthy)
 sscurves_ManyInfections
-ROC_ManyInfections2 <- autoplot(sscurves_ManyInfections, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE6269-GPL96 (Multiple infections vs control)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.35"), size = 5)
-PRC_ManyInfections2 <- autoplot(sscurves_ManyInfections, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE6269-GPL96 (Multiple infections vs control)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.92"), size = 5)
+ROC_ManyInfections2 <- autoplot(sscurves_ManyInfections, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE6269-GPL96 (Multiple infections vs control)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.35"), size = 4)
+PRC_ManyInfections2 <- autoplot(sscurves_ManyInfections, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE6269-GPL96 (Multiple infections vs control)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.92"), size = 4)
 
 save(ROC_ManyInfections2, PRC_ManyInfections2, file = "./Objs/ManyInfections2_Curves.rda")
 

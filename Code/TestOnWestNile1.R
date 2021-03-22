@@ -78,8 +78,8 @@ ROCTest
 # For ROC and PRC curves
 sscurves_WestNile1 <- evalmod(scores = PredVotes_WestNile[,2], labels = ClassSeverVsAsymp)
 sscurves_WestNile1
-ROC_WestNile <- autoplot(sscurves_WestNile1, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE46681 (West Nile)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.55"), size = 5)
-PRC_WestNile <- autoplot(sscurves_WestNile1, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE46681 (West Nile)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.466"), size = 5)
+ROC_WestNile <- autoplot(sscurves_WestNile1, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE46681 (West Nile)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.55"), size = 4)
+PRC_WestNile <- autoplot(sscurves_WestNile1, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE46681 (West Nile)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.466"), size = 4)
 
 save(ROC_WestNile, PRC_WestNile, file = "./Objs/WestNile1_Curves.rda")
 

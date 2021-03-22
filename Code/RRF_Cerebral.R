@@ -220,8 +220,8 @@ MCC_Test
 # For ROC and PRC curves
 sscurves_Test_Cerebral <- evalmod(scores = PredVotes_Test[,2], labels = usedTestGroup)
 sscurves_Test_Cerebral
-ROC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("ROC")) + labs(title = "ROC curve 1st testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.98"), size = 5)
-PRC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("PRC")) + labs(title = "PRC curve 1st testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.98"), size = 5)
+ROC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.98"), size = 4)
+PRC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.98"), size = 4)
 
 
 #######################################################################################
@@ -279,17 +279,23 @@ PRC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("PRC")) + la
 ########################################################################
 ##############################################
 ## Make a combined figure for the paper
-png(filename = "./Figs/CerebralSignaturesPerformance.png", width = 1500, height = 1000, res = 100)
-((ROC_Test_Cerebral / PRC_Test_Cerebral + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
-    (ROC_Test_Cerebral2 / PRC_Test_Cerebral2 + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
-    (ROC_Test_Cerebral3 / PRC_Test_Cerebral3 + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
-    (ROC_MetaTest_Cerebral / PRC_MetaTest_Cerebral + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12)))
+load("./Objs/SevereSigROC_PRC.rda")
+
+ROC_Test_Comp$theme$plot.title$size <- 8
+PRC_Test_Comp$theme$plot.title$size <- 8
+ROC_Test_Cerebral$theme$plot.title$size <- 8
+PRC_Test_Cerebral$theme$plot.title$size <- 8
+
+
+tiff(filename = "./Figs/TwoSignaturesPerformance.tiff", width = 2500, height = 2000, res = 350)
+((ROC_Test_Comp / PRC_Test_Comp + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
+    (ROC_Test_Cerebral / PRC_Test_Cerebral + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12)))  
 ) +
   #plot_layout(widths = c(0.4, 1)) + 
   plot_annotation(
-    title = 'The performance of the cerebral malaria signature in the testing data',
+    title = 'The performance of the two malaria signatures in the testing data',
     tag_levels = c('A', '1'),
-    theme = theme(plot.title = element_text(size = 17, face = "bold"))
+    theme = theme(plot.title = element_text(size = 12, face = "bold"))
   )
 dev.off()
 

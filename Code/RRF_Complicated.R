@@ -16,6 +16,7 @@ library(randomForestExplainer)
 library(inTrees)
 library(pROC)
 library(caret)
+library(patchwork)
 
 ## Load data
 load("./Objs/MalariaDataGood_Comp.rda")
@@ -85,24 +86,25 @@ Sel
 
 ####################################
 # Frequency figure
-# sum_result <- sum_result[order(sum_result$rep_rows, decreasing = T), ]
-# 
-# png(filename = "./Figs/CompFrequency.png", width = 2000, height = 2000, res = 300)
-# CompFreq <- ggplot(data=sum_result, aes(x=rep_rows, y=reorder(Gene, rep_rows))) +
-#   geom_col(width=0.5) +
-#   scale_x_continuous(limits = c(0,15), breaks = 0:15) +
-#   labs(y = "Gene", x = "Frequency", title = " Frequency of genes in the severe malaria signature")
-# CompFreq
-# dev.off()
+sum_result <- sum_result[order(sum_result$rep_rows, decreasing = T), ]
+
+png(filename = "./Figs/CompFrequency.png", width = 2000, height = 2000, res = 300)
+CompFreq <- ggplot(data=sum_result, aes(x=rep_rows, y=reorder(Gene, rep_rows))) +
+  geom_col(width=0.5) +
+  scale_x_continuous(limits = c(0,15), breaks = 0:15) +
+  labs(y = "Gene", x = "Frequency", title = "Severe malaria signature")
+CompFreq
+dev.off()
 
 
 ##################
 # Together with cerebral signature
-# load("./Objs/CerebralFreqPlot.png")
-# 
-# png(filename = "./Figs/CombinedFrequency.png", width = 3000, height = 1700, res = 200)
-# CompFreq + CerebralFreq
-# dev.off()
+load("./Objs/CerebralFreqPlot.png")
+
+CerebralFreq$labels$title <- "Cerebral malaria signature"
+tiff(filename = "./Figs/CombinedFrequency.tiff", width = 3000, height = 1700, res = 350)
+CompFreq + CerebralFreq
+dev.off()
 
 
 ########################################
@@ -233,9 +235,10 @@ MCC_Test
 # For ROC and PRC curves
 sscurves_Test_Comp <- evalmod(scores = PredVotes_Test[,2], labels = usedTestGroup)
 sscurves_Test_Comp
-ROC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("ROC")) + labs(title = "ROC curve 1st testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.85"), size = 5)
-PRC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("PRC")) + labs(title = "PRC curve 1st testing dataset") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.95"), size = 5)
+ROC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("ROC")) + labs(title = "ROC curve of the severe malaria signature") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.85"), size = 4)
+PRC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("PRC")) + labs(title = "PRC curve of the severe malaria signature") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.95"), size = 4)
 
+save(ROC_Test_Comp, PRC_Test_Comp, file = "./Objs/SevereSigROC_PRC.rda")
 #######################################################################################
 ## Predict in the 2nd testing data 
 # Placental malaria vs non-placental malaria
@@ -258,8 +261,8 @@ MCC_Test2
 # For ROC and PRC curves
 sscurves_PM <- evalmod(scores = PredVotes_Test2[,2], labels = ClassComplicatedVSunComplicated)
 sscurves_PM
-ROC_PM<- autoplot(sscurves_PM, curvetype = c("ROC")) + labs(title = "ROC curve PM +ve vs PM -ve") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.70"), size = 5)
-PRC_PM <- autoplot(sscurves_PM, curvetype = c("PRC")) + labs(title = "PRC curve PM +ve vs PM -ve") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.62"), size = 5)
+ROC_PM<- autoplot(sscurves_PM, curvetype = c("ROC")) + labs(title = "ROC curve PM +ve vs PM -ve") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.70"), size = 4)
+PRC_PM <- autoplot(sscurves_PM, curvetype = c("PRC")) + labs(title = "PRC curve PM +ve vs PM -ve") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.62"), size = 4)
 
 #######################################################################################
 ## Predict in the 2nd testing data 
@@ -284,8 +287,13 @@ MCC_Test2
 # For ROC and PRC curves
 sscurves_PM_Inflamm <- evalmod(scores = PredVotes_Test2[,2], labels = ClassInflammation)
 sscurves_PM_Inflamm
-ROC_PM_Inflamm <- autoplot(sscurves_PM_Inflamm, curvetype = c("ROC")) + labs(title = "ROC curve inflammation vs no inflammation") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.76"), size = 5)
-PRC_PM_Inflamm <- autoplot(sscurves_PM_Inflamm, curvetype = c("PRC")) + labs(title = "PRC curve inflammation vs no inflammation") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.60"), size = 5)
+ROC_PM_Inflamm <- autoplot(sscurves_PM_Inflamm, curvetype = c("ROC")) + labs(title = "ROC curve inflammation vs no inflammation") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.76"), size = 4)
+PRC_PM_Inflamm <- autoplot(sscurves_PM_Inflamm, curvetype = c("PRC")) + labs(title = "PRC curve inflammation vs no inflammation") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.60"), size = 4)
+
+ROC_PM$theme$plot.title$size <- 8
+PRC_PM$theme$plot.title$size <- 8
+ROC_PM_Inflamm$theme$plot.title$size <- 8
+PRC_PM_Inflamm$theme$plot.title$size <- 8
 
 #################################################################
 #######################################################################################
@@ -315,7 +323,7 @@ PRC_PM_Inflamm <- autoplot(sscurves_PM_Inflamm, curvetype = c("PRC")) + labs(tit
 
 #######################################################################################
 ## Make a combined figure for the paper
-png(filename = "./Figs/severeSignaturesPerformance_PM.png", width = 1500, height = 1000, res = 100)
+tiff(filename = "./Figs/severeSignaturesPerformance_PM.tiff", width = 2500, height = 2000, res = 350)
 ((ROC_PM / PRC_PM + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
     (ROC_PM_Inflamm / PRC_PM_Inflamm + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12)))
 ) +
@@ -323,7 +331,7 @@ png(filename = "./Figs/severeSignaturesPerformance_PM.png", width = 1500, height
   plot_annotation(
     title = 'The performance of the severe malaria signature in the placental malaria dataset',
     tag_levels = c('A', '1'),
-    theme = theme(plot.title = element_text(size = 17, face = "bold"))
+    theme = theme(plot.title = element_text(size = 12, face = "bold"))
   )
 dev.off()
 

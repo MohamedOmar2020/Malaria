@@ -4,6 +4,11 @@
 rm(list = ls())
 
 library(GEOquery)
+library(randomForest)
+library(caret)
+library(ggplot2)
+library(precrec)
+library(pROC)
 
 #DengueDataset2 <- getGEO("GSE96656", GSEMatrix = T, AnnotGPL = T)
 #DengueDataset2 <- DengueDataset2$GSE96656_series_matrix.txt.gz
@@ -59,6 +64,8 @@ load("./Objs/RF_Comp.rda")
 ## Some features (2) are present in the RF model but not in the expression matrix >> removed them
 CommonGns <- intersect(rownames(Expr_Dengue2), rownames(RF_Comp$importance))
 RF_Comp$importance <- RF_Comp$importance[CommonGns, ]
+RF_Comp$importanceSD <- RF_Comp$importanceSD[CommonGns, ]
+RF_Comp$forest$ncat <- RF_Comp$forest$ncat[CommonGns]
 
 #################
 ## Predict in the Dengue dataset (Dengue vs normal)
@@ -74,8 +81,8 @@ ROCTest
 # For ROC and PRC curves
 sscurves_Dengue2 <- evalmod(scores = PredVotes_Dengue[,2], labels = ClassDengueVsNormal)
 sscurves_Dengue2
-ROC_Dengue2 <- autoplot(sscurves_Dengue2, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE96656 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.37"), size = 5)
-PRC_Dengue2 <- autoplot(sscurves_Dengue2, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE96656 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.71"), size = 5)
+ROC_Dengue2 <- autoplot(sscurves_Dengue2, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE96656 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.32"), size = 4)
+PRC_Dengue2 <- autoplot(sscurves_Dengue2, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE96656 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.67"), size = 4)
 
 save(ROC_Dengue2, PRC_Dengue2, file = "./Objs/Dengue2_Curves.rda")
 

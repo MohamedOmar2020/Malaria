@@ -65,8 +65,8 @@ ROCTest
 # For ROC and PRC curves
 sscurves_TB2 <- evalmod(scores = PredVotes_TB2[,2], labels = ClassTBandPNAVsLatentTB)
 sscurves_TB2
-ROC_TB2 <- autoplot(sscurves_TB2, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE73408 (primary TB and pneumonia vs latent TB)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.55"), size = 5)
-PRC_TB2 <- autoplot(sscurves_TB2, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE73408 (primary TB and pneumonia vs latent TB)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.73"), size = 5)
+ROC_TB2 <- autoplot(sscurves_TB2, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE73408 (primary TB and pneumonia vs latent TB)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.55"), size = 4)
+PRC_TB2 <- autoplot(sscurves_TB2, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE73408 (primary TB and pneumonia vs latent TB)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.73"), size = 4)
 
 save(ROC_TB2, PRC_TB2, file = "./Objs/TB2_Curves.rda")
 

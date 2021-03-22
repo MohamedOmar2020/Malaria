@@ -67,8 +67,8 @@ ROCTest
 # For ROC and PRC curves
 sscurves_HIVandTB <- evalmod(scores = PredVotes_HIVandTB[,2], labels = ClassHIVandTBVsHealthy)
 sscurves_HIVandTB
-ROC_HIVandTB <- autoplot(sscurves_HIVandTB, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE39940 (HIV +ve or active TB vs healthy)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.52"), size = 5)
-PRC_HIVandTB <- autoplot(sscurves_HIVandTB, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE39940 (HIV +ve or active TB vs healthy)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.57"), size = 5)
+ROC_HIVandTB <- autoplot(sscurves_HIVandTB, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE39940 (HIV +ve or active TB vs healthy)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.52"), size = 4)
+PRC_HIVandTB <- autoplot(sscurves_HIVandTB, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE39940 (HIV +ve or active TB vs healthy)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.57"), size = 4)
 
 save(ROC_HIVandTB, PRC_HIVandTB, file = "./Objs/HIVandTB_Curves.rda")
 

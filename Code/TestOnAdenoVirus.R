@@ -70,8 +70,8 @@ ROCTest
 # For ROC and PRC curves
 sscurves_Adenovirus1 <- evalmod(scores = PredVotes_Adenovirus[,2], labels = ClassInfectionVsNormal)
 sscurves_Adenovirus1
-ROC_Adenovirus <- autoplot(sscurves_Adenovirus1, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE40396 (Many infections)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.60"), size = 5)
-PRC_Adenovirus <- autoplot(sscurves_Adenovirus1, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE40396 (Many infections)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.736"), size = 5)
+ROC_Adenovirus <- autoplot(sscurves_Adenovirus1, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE40396 (Many infections)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.60"), size = 4)
+PRC_Adenovirus <- autoplot(sscurves_Adenovirus1, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE40396 (Many infections)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.736"), size = 4)
 
 save(ROC_Adenovirus, PRC_Adenovirus, file = "./Objs/Adenovirus1_Curves.rda")
 

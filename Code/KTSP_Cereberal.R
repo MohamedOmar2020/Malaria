@@ -217,12 +217,12 @@ levels(dat_KTSP$KTSP_type) <- paste(levels(dat_KTSP$KTSP_type), forLegend_KTSP[c
 
 #################################################################
 ### Plot Curve
-png("./Figs/AUCggplot_Cerebral.png",
-    width=3000, height=3000, res=300)
+tiff("./Figs/AUCggplot_Cerebral.tiff",
+    width=3000, height=3000, res=350)
 ### Color
 myCol <- brewer.pal(3, "Dark2")[c(2,1)]
 ### Plot and legend titles
-plotTitle <- "Performance of the cerebral malaria signature in the training and testing data"
+plotTitle <- "Performance of the 9-TSPs cerebral malaria signature in the training and testing data"
 #legendTitle <- paste("Mechanistic (", nrow(ktspPredictorRes$TSPs), " pairs)",
 #                     "Agnostic (", nrow(ktspPredictorUnRes$TSPs), " pairs)",  sep="")
 ### Plot
@@ -230,13 +230,13 @@ basicplot_KTSP <- ggplot(dat_KTSP, aes(d=Status, m=KTSP_sum, color=KTSP_type,
                                        linetype = KTSP_type)) +
   geom_roc(cutoffs.at = seq(1,20,1)) +
   style_roc(theme = theme_grey) + ggtitle(plotTitle) +
-  theme(plot.title = element_text(face="bold", size=16, hjust = 0.5),
+  theme(plot.title = element_text(face="bold", size=14, hjust = 0.5),
         axis.text=element_text(face="plain", size = 11),
         axis.title=element_text(face="bold", size = 13),
         legend.justification=c(1,0),  legend.position=c(1,0),
         legend.background=element_rect(fill="lightblue1"),
-        legend.text=element_text(face="plain", size = 10),
-        legend.title = element_text(face="bold", size=7)) +
+        legend.text=element_text(face="plain", size = 14),
+        legend.title = element_text(face="bold", size=0)) +
   #scale_color_manual(legendTitle, values=rep(myCol, 2)) +
   #scale_linetype_manual(legendTitle, values=rep(c("solid", "dotted"), each=2)) +
   guides(colour = guide_legend(override.aes = list(size=3)))

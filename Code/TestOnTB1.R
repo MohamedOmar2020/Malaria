@@ -64,10 +64,10 @@ ROCTest <- roc(ClassTBVsHealthy, PredVotes_TB1[,2], plot = F, print.auc = TRUE, 
 ROCTest
 
 # For ROC and PRC curves
-sscurves_TB1 <- evalmod(scores = PredVotes_TB1[,2], labels = ClassTB1VsHealthy)
+sscurves_TB1 <- evalmod(scores = PredVotes_TB1[,2], labels = ClassTBVsHealthy)
 sscurves_TB1
-ROC_TB1 <- autoplot(sscurves_TB1, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE19444 (primary TB vs latent TB and healthy)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.32"), size = 5)
-PRC_TB1 <- autoplot(sscurves_TB1, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE19444 (primary TB vs latent TB and healthy)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.286"), size = 5)
+ROC_TB1 <- autoplot(sscurves_TB1, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE19444 (primary TB vs latent TB and healthy)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.32"), size = 4)
+PRC_TB1 <- autoplot(sscurves_TB1, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE19444 (primary TB vs latent TB and healthy)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.286"), size = 4)
 
 save(ROC_TB1, PRC_TB1, file = "./Objs/TB1_Curves.rda")
 

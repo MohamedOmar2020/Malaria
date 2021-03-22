@@ -70,8 +70,8 @@ ROCTest
 # For ROC and PRC curves
 sscurves_TB4 <- evalmod(scores = PredVotes_TB4[,2], labels = ClassTBVsHealthy)
 sscurves_TB4
-ROC_TB4 <- autoplot(sscurves_TB4, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE83456 (pulomnary and extrapulmonary TB vs healthy)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.50"), size = 5)
-PRC_TB4 <- autoplot(sscurves_TB4, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE83456 (pulomnary and extrapulmonary TB vs healthy)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.61"), size = 5)
+ROC_TB4 <- autoplot(sscurves_TB4, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE83456 (pulomnary and extrapulmonary TB vs healthy)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.50"), size = 4)
+PRC_TB4 <- autoplot(sscurves_TB4, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE83456 (pulomnary and extrapulmonary TB vs healthy)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.61"), size = 4)
 
 save(ROC_TB4, PRC_TB4, file = "./Objs/TB4_Curves.rda")
 
