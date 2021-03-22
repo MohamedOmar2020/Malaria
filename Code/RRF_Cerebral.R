@@ -220,8 +220,8 @@ MCC_Test
 # For ROC and PRC curves
 sscurves_Test_Cerebral <- evalmod(scores = PredVotes_Test[,2], labels = usedTestGroup)
 sscurves_Test_Cerebral
-ROC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.98"), size = 4)
-PRC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.98"), size = 4)
+ROC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.98"), size = 3)
+PRC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.98"), size = 3)
 
 
 #######################################################################################

@@ -73,8 +73,8 @@ ROCTest
 # For ROC and PRC curves
 sscurves_Dengue4 <- evalmod(scores = PredVotes_Dengue[,2], labels = ClassDFvsnormal)
 sscurves_Dengue4
-ROC_Dengue4 <- autoplot(sscurves_Dengue4, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE18090 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.43"), size = 4)
-PRC_Dengue4 <- autoplot(sscurves_Dengue4, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE18090 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.725"), size = 4)
+ROC_Dengue4 <- autoplot(sscurves_Dengue4, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE18090 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.43"), size = 3)
+PRC_Dengue4 <- autoplot(sscurves_Dengue4, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE18090 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.725"), size = 3)
 
 save(ROC_Dengue4, PRC_Dengue4, file = "./Objs/Dengue4_Curves.rda")
 

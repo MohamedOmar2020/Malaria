@@ -235,8 +235,8 @@ MCC_Test
 # For ROC and PRC curves
 sscurves_Test_Comp <- evalmod(scores = PredVotes_Test[,2], labels = usedTestGroup)
 sscurves_Test_Comp
-ROC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("ROC")) + labs(title = "ROC curve of the severe malaria signature") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.85"), size = 4)
-PRC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("PRC")) + labs(title = "PRC curve of the severe malaria signature") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.95"), size = 4)
+ROC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("ROC")) + labs(title = "ROC curve of the severe malaria signature") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.85"), size = 3)
+PRC_Test_Comp <- autoplot(sscurves_Test_Comp, curvetype = c("PRC")) + labs(title = "PRC curve of the severe malaria signature") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.95"), size = 3)
 
 save(ROC_Test_Comp, PRC_Test_Comp, file = "./Objs/SevereSigROC_PRC.rda")
 #######################################################################################
