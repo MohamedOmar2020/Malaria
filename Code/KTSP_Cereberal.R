@@ -66,34 +66,10 @@ ktspPredictorRes <- SWAP.Train.KTSP(
 
 ktspPredictorRes
 
-save(ktspPredictorRes, file = "./Objs/KTSP_Model_Cerebral.rda")
+#save(ktspPredictorRes, file = "./Objs/KTSP_Model_Cerebral.rda")
 load("./Objs/KTSP_Model_Cerebral.rda")
-#Mechanistic_KTSP <- cbind(ktspPredictorRes$TSPs, ktspPredictorRes$score)
-#colnames(Mechanistic_KTSP) <- c("gene1", "gene2", "score")
-
-#print(xtable(Mechanistic_KTSP, type = "latex"), file = "./Objs/KTSP/Mechanistic.tex")
-
-## Save the mechanistic Pairs
-#MechanisticKTSP_Pairs <- c("ZKSCAN1>ZW10", "HES1>NR3C1", "ZNF160>ZMIZ1", "KLHL9>PML", "NUDC>RELA", "SNCA>ZBTB7A", "ALDH7A1>NFIC", "SMC3>RNF44", "UBE2N>SUZ12", "ARL2>MAX", "EGR1>TSTA3")
-#save(MechanisticKTSP_Pairs, file = "./Objs/KTSP/MechanisticKTSP_Pairs.rda")
-
 
 ###########################################################################
-### Check consistency with biology
-# keep <- ktspPredictorRes$TSPs[,1] %in% myTSPs[,"Up"] & ktspPredictorRes$TSPs[,2] %in% myTSPs[,"Down"]
-# table(keep)
-# 
-# ###Subset
-# ktspPredictorRes$name <- paste(sum(keep), "TSPs", sep="")
-# ktspPredictorRes$TSPs <- ktspPredictorRes$TSPs[ keep, ]
-# ktspPredictorRes$score <- ktspPredictorRes$score[ keep ]
-# ktspPredictorRes$tieVote <- droplevels(ktspPredictorRes$tieVote[keep])
-# 
-# #### Visualize the classifier
-# ktspPredictorRes
-# 
-# save(ktspPredictorRes, file = "./Objs/MechanisticKTSP_Filt.rda")
-
 ############################################################################
 ### Compute the sum and find the best threshold: All training samples
 ktspStatsTrainRes <- SWAP.KTSP.Statistics(inputMat = usedTrainMat, classifier = ktspPredictorRes, CombineFunc = sum)
@@ -133,19 +109,6 @@ rownames(TrainPerf) <- c("AUC", "AUC_CI_low", "AUC_CI_high", "Accuracy", "Bal.Ac
 ## Compute the sum and find the best threshold
 ktspStatsTestRes <- SWAP.KTSP.Statistics(inputMat = usedTestMat, classifier = ktspPredictorRes, CombineFunc = sum)
 summary(ktspStatsTestRes$statistics)
-
-#KTSP_STATs_Test_Mechanistic <- t(ktspStatsTestRes$comparisons)
-#KTSP_STATs_Test_Mechanistic[KTSP_STATs_Test_Mechanistic == FALSE] <- 0
-
-#save(KTSP_STATs_Train_Mechanistic, KTSP_STATs_Test_Mechanistic, file = "./Objs/KTSP/TNBC_KTSP_STATs_Mechanistic.rda")
-
-## Threshold
-#thr_test <- coords(roc(UsedTestGroup, ktspStatsTestRes$statistics, levels = c("Resistant", "Sensitive")), transpose = T,"best")["threshold"]
-#thr_test
-
-#####
-## Print ROC curve local maximas
-#coords(roc(UsedTestGroup, ktspStatsTestRes$statistics, levels = c("Resistant", "Sensitive")), transpose = T, "local maximas")
 
 ## Plot curve
 ROCTest <- roc(usedTestGroup, ktspStatsTestRes$statistics, plot = T, print.thres=thr$threshold, print.auc=TRUE, print.auc.col="black", ci = T, levels = c("nonCerebral", "cerebral"), direction = "<", col="blue", lwd=2, grid=TRUE, main= "Mechanistic KTSP using TF_MiR Gns")
@@ -218,7 +181,7 @@ levels(dat_KTSP$KTSP_type) <- paste(levels(dat_KTSP$KTSP_type), forLegend_KTSP[c
 #################################################################
 ### Plot Curve
 tiff("./Figs/AUCggplot_Cerebral.tiff",
-    width=3000, height=3000, res=350)
+    width=3000, height=3000, res=300)
 ### Color
 myCol <- brewer.pal(3, "Dark2")[c(2,1)]
 ### Plot and legend titles
