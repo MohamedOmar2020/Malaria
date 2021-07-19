@@ -181,7 +181,7 @@ levels(dat_KTSP$KTSP_type) <- paste(levels(dat_KTSP$KTSP_type), forLegend_KTSP[c
 #################################################################
 ### Plot Curve
 tiff("./Figs/AUCggplot_Cerebral.tiff",
-    width=3000, height=3000, res=300)
+    width=2800, height=2500, res=300)
 ### Color
 myCol <- brewer.pal(3, "Dark2")[c(2,1)]
 ### Plot and legend titles
