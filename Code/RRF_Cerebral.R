@@ -41,20 +41,20 @@ names(DataTrain) <- make.names(names(DataTrain))
 lambda <- 0.8 # Both the number of features and the quality of the features are quite sensitive to lambda for RRF. A smaller lambda leads to fewer features.
 
 # The function for bootstraping
-# RF_Strap <- function(data, indices) {
-#   d <- data[indices, ] # allows boot to select sample
-#   rrf <- RRF(usedTrainGroup~., data = d, flagReg = 1, coefReg=lambda) # coefReg is a constant for all variables.   #either "X,as.factor(class)" or data frame like "Y~., data=data" is fine, but the later one is significantly slower. 
-#   TrainData <- d
-#   TrainData$usedTrainGroup <- NULL
-#   subsetRRF <- rrf$feaSet
-#   SelFeats <- colnames(TrainData[, subsetRRF])
-#   return(as.vector(SelFeats[1:30]))
-# }
-# 
-# set.seed(333)
-# bootobject_Cerebral <- boot(data = DataTrain, statistic = RF_Strap, R = 100, parallel = "multicore", ncpus = 15) 
-# 
-# save(bootobject_Cerebral, file = "./Objs/bootobject_Cerebral.rda")
+RF_Strap <- function(data, indices) {
+  d <- data[indices, ] # allows boot to select sample
+  rrf <- RRF(usedTrainGroup~., data = d, flagReg = 1, coefReg=lambda) # coefReg is a constant for all variables.   #either "X,as.factor(class)" or data frame like "Y~., data=data" is fine, but the later one is significantly slower.
+  TrainData <- d
+  TrainData$usedTrainGroup <- NULL
+  subsetRRF <- rrf$feaSet
+  SelFeats <- colnames(TrainData[, subsetRRF])
+  return(as.vector(SelFeats[1:30]))
+}
+
+set.seed(333)
+bootobject_Cerebral <- boot(data = DataTrain, statistic = RF_Strap, R = 100, parallel = "multicore", ncpus = 15)
+
+save(bootobject_Cerebral, file = "./Objs/bootobject_Cerebral.rda")
 
 load("./Objs/bootobject_Cerebral.rda")
 

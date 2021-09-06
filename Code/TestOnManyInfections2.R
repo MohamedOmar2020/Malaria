@@ -51,11 +51,11 @@ all(rownames(Pheno_ManyInfections2) == colnames(Expr_ManyInfections2))
 ClassInfectionsVsHealthy<- Pheno_ManyInfections2$DiseaseStatus
 
 ####################################
-## Load the model
+## Load the severe malaria signature
 load("./Objs/RF_Comp.rda")
 
 #################
-## Predict in the WestNile dataset (WestNile vs normal)
+## Predict
 
 TestingData_ManyInfections <- t(Expr_ManyInfections2)
 
@@ -77,16 +77,19 @@ save(ROC_ManyInfections2, PRC_ManyInfections2, file = "./Objs/ManyInfections2_Cu
 
 
 ####################################
-## Load the cerebral malaria
+## Load the cerebral malaria signature
 load("./Objs/RF_Cerebral.rda")
 
 #################
-## Predict in the WestNile dataset (DHF vs DF)
+## Predict 
 
-#TestingData_ManyInfections <- t(Expr_ManyInfections2)
+PredVotes_ManyInfections2_cerebral <- predict(RF_Cerebral, newdata = TestingData_ManyInfections, type = "vote")
+PredResponse_ManyInfections2_cerebral <- predict(RF_Cerebral, TestingData_ManyInfections, type="response")
 
-PredVotes_ManyInfections <- predict(RF_Cerebral, newdata = TestingData_ManyInfections, type = "vote")
-PredResponse_ManyInfections <- predict(RF_Cerebral, TestingData_ManyInfections, type="response")
+# For ROC and PRC curves
+sscurves_ManyInfections2_cerebral <- evalmod(scores = PredVotes_ManyInfections2_cerebral[,2], labels = ClassInfectionsVsHealthy)
+sscurves_ManyInfections2_cerebral
+ROC_ManyInfections2_cerebral <- autoplot(sscurves_ManyInfections2_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE6269-GPL96 (Multiple infections vs control)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.26"), size = 4)
+PRC_ManyInfections2_cerebral <- autoplot(sscurves_ManyInfections2_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE6269-GPL96 (Multiple infections vs control)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.90"), size = 4)
 
-ROCTest <- roc(ClassInfectionsVsHealthy, PredVotes_ManyInfections[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
-ROCTest
+save(ROC_ManyInfections2_cerebral, PRC_ManyInfections2_cerebral, file = "./Objs/ManyInfections2_Curves_cerebral.rda")

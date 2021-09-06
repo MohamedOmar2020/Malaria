@@ -28,6 +28,10 @@ load("./Objs/MalariaDataGood_NCvsC.rda")
 usedTrainMat <- normalizeBetweenArrays(mixTrainMat, method = "quantile")
 usedTestMat <- normalizeBetweenArrays(mixTestMat, method = "quantile")
 
+boxplot(mixTrainMat)
+
+boxplot(usedTrainMat)
+
 # Associated groups
 usedTrainGroup <- mixTrainGroup
 usedTestGroup <- mixTestGroup

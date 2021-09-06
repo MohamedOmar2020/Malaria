@@ -50,11 +50,11 @@ all(rownames(Pheno_ManyInfections3) == colnames(Expr_ManyInfections3))
 ClassInfectionsVsHealthy<- Pheno_ManyInfections3$DiseaseStatus
 
 ####################################
-## Load the model
+## Load the severe malaria signature
 load("./Objs/RF_Comp.rda")
 
 #################
-## Predict in the WestNile dataset (WestNile vs normal)
+## Predict
 
 TestingData_ManyInfections <- t(Expr_ManyInfections3)
 
@@ -80,12 +80,16 @@ save(ROC_ManyInfections3, PRC_ManyInfections3, file = "./Objs/ManyInfections3_Cu
 load("./Objs/RF_Cerebral.rda")
 
 #################
-## Predict in the WestNile dataset (DHF vs DF)
+## Predict
 
-#TestingData_ManyInfections <- t(Expr_ManyInfections3)
+PredVotes_ManyInfections3_cerebral <- predict(RF_Cerebral, newdata = TestingData_ManyInfections, type = "vote")
+PredResponse_ManyInfections3_cerebral <- predict(RF_Cerebral, TestingData_ManyInfections, type="response")
 
-PredVotes_ManyInfections <- predict(RF_Cerebral, newdata = TestingData_ManyInfections, type = "vote")
-PredResponse_ManyInfections <- predict(RF_Cerebral, TestingData_ManyInfections, type="response")
+# For ROC and PRC curves
+sscurves_ManyInfections3_cerebral <- evalmod(scores = PredVotes_ManyInfections3_cerebral[,2], labels = ClassInfectionsVsHealthy)
+sscurves_ManyInfections3_cerebral
+ROC_ManyInfections3_cerebral <- autoplot(sscurves_ManyInfections3_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE63990 (Multiple infections vs control)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.51"), size = 4)
+PRC_ManyInfections3_cerebral <- autoplot(sscurves_ManyInfections3_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE63990 (Multiple infections vs control)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.73"), size = 4)
 
-ROCTest <- roc(ClassInfectionsVsHealthy, PredVotes_ManyInfections[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
-ROCTest
+save(ROC_ManyInfections3_cerebral, PRC_ManyInfections3_cerebral, file = "./Objs/ManyInfections3_Curves_cerebral.rda")
+

@@ -107,21 +107,7 @@ CompFreq + CerebralFreq
 dev.off()
 
 
-########################################
-## Heatmap
-# NewOrder <- order(usedTrainGroup)
-# usedTrainGroup_ord <- usedTrainGroup[NewOrder]
-# 
-# X <- usedTrainMat[Sel, ]
-# 
-# X <- X[, NewOrder]
-# 
-# Annot <- as.data.frame(usedTrainGroup_ord)
-# rownames(Annot) <- names(usedTrainGroup_ord)
-# 
-# png(filename = "./Figs/CompHeatmap.png", width = 2000, height = 1500, res = 300)
-# pheatmap::pheatmap(X, annotation_col = Annot, cluster_cols = F, cluster_rows = F, show_colnames = F)
-# dev.off()
+#######################################
 #####################################
 ## Use the selected features to build a new random forest model
 
@@ -140,44 +126,40 @@ min_size <- tmp[order(tmp,decreasing=FALSE)[1]]
 sampsizes <- rep(min_size,num_classes)
 
 ###########################
-## Explain the RF
+###########################
+#################
+## Mean expression by group
+library(dplyr)
 
-# DataTrain <- cbind(PredictorData_Filt, usedTrainGroup)
-# DataTrain <- as.data.frame(DataTrain)
-# DataTrain$usedTrainGroup <- as.factor(DataTrain$usedTrainGroup)
-# levels(DataTrain$usedTrainGroup) <- c("unComplicated", "Complicated")
-# 
-# # MAke a violin plot
-# library(tidyr)
-# 
-# X <- pivot_longer(
-#   DataTrain,
-#   cols = 1:28,
-#   names_to = "Gene",
-#   names_repair = "check_unique",
-#   values_to = "Expression",
-# )
-# 
-# png(filename = "./Figs/ComViolinPlot.png", width = 2000, height = 1200, res = 150)
-# ggplot(X, 
-#        aes(x = usedTrainGroup, 
-#            y = Expression)) + 
-#   geom_violin(aes(fill = usedTrainGroup),
-#               scale = "count")+
-#   #geom_jitter(width = 0.1, size = 0.2)+
-#   facet_wrap(~Gene)
-# dev.off()
+DataTrain_filt <- cbind(PredictorData_Filt, usedTrainGroup)
+DataTrain_filt <- as.data.frame(DataTrain_filt)
+DataTrain_filt$usedTrainGroup <- as.factor(DataTrain_filt$usedTrainGroup)
+levels(DataTrain_filt$usedTrainGroup) <- c("unComplicated", "Complicated")
 
+Uncomplicated <- DataTrain_filt %>%
+  filter(usedTrainGroup == "unComplicated")
 
-# set.seed(333)
-# tuneRF(x = PredictorData_Filt, y = usedTrainGroup, mtryStart = 1, ntreeTry = 500, stepFactor = 1, improve = 0.01, trace = F, plot = F)
-# 
-# set.seed(333)
-# RF <- randomForest(usedTrainGroup~., data = DataTrain, mtry = 1, ntree = 500, trace = F, plot = F, doBest = T, sampsize = sampsizes, importance = T)
-# RF
-# 
-# explain_forest(RF, interactions = TRUE, data = DataTrain)
+Uncomplicated$usedTrainGroup <- NULL
 
+Complicated <- DataTrain_filt %>%
+  filter(usedTrainGroup == "Complicated")
+
+Complicated$usedTrainGroup <- NULL
+
+Mean_unComplicated <- apply(Uncomplicated, 2, mean)
+Mean_unComplicated <- data.frame(Mean_unComplicated)
+
+Mean_Complicated <- apply(Complicated, 2, mean)
+Mean_Complicated <- data.frame(Mean_Complicated)
+
+Comparison <- cbind(Mean_unComplicated, Mean_Complicated)
+
+Comparison$diff <- Comparison[,2] - Comparison[, 1]
+Comparison$up_or_down <- ifelse(Comparison$diff > 0, "up", "down")
+
+Comparison$gene <- rownames(Comparison)
+rownames(Comparison) <- NULL
+write.csv(Comparison, file = "./Objs/Comparison_Complicated.csv")
 
 ##################################
 ## Build the random forest model

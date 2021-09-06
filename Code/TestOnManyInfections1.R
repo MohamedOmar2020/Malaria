@@ -53,11 +53,11 @@ all(rownames(Pheno_ManyInfections1) == colnames(Expr_ManyInfections1))
 ClassInfectionsVsHealthy<- Pheno_ManyInfections1$DiseaseStatus
 
 ####################################
-## Load the model
+## Load the severe malaria signature
 load("./Objs/RF_Comp.rda")
 
 #################
-## Predict in the WestNile dataset (WestNile vs normal)
+## Predict 
 
 TestingData_ManyInfections <- t(Expr_ManyInfections1)
 
@@ -79,16 +79,22 @@ save(ROC_ManyInfections1, PRC_ManyInfections1, file = "./Objs/ManyInfections1_Cu
 
 
 ####################################
-## Load the cerebral malaria
+## Load the cerebral malaria signature
 load("./Objs/RF_Cerebral.rda")
 
 #################
-## Predict in the WestNile dataset (DHF vs DF)
+## Predict
 
-#TestingData_ManyInfections <- t(Expr_ManyInfections1)
+PredVotes_ManyInfections_cerebral <- predict(RF_Cerebral, newdata = TestingData_ManyInfections, type = "vote")
+PredResponse_ManyInfections_cerebral <- predict(RF_Cerebral, TestingData_ManyInfections, type="response")
 
-PredVotes_ManyInfections <- predict(RF_Cerebral, newdata = TestingData_ManyInfections, type = "vote")
-PredResponse_ManyInfections <- predict(RF_Cerebral, TestingData_ManyInfections, type="response")
-
-ROCTest <- roc(ClassInfectionsVsHealthy, PredVotes_ManyInfections[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest <- roc(ClassInfectionsVsHealthy, PredVotes_ManyInfections_cerebral[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
 ROCTest
+
+# For ROC and PRC curves
+sscurves_ManyInfections_cerebral <- evalmod(scores = PredVotes_ManyInfections_cerebral[,2], labels = ClassInfectionsVsHealthy)
+sscurves_ManyInfections_cerebral
+ROC_ManyInfections1_cerebral <- autoplot(sscurves_ManyInfections_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE42026 (Multiple infections vs control)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.31"), size = 4)
+PRC_ManyInfections1_cerebral <- autoplot(sscurves_ManyInfections_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE42026 (Multiple infections vs control)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.52"), size = 4)
+
+save(ROC_ManyInfections1_cerebral, PRC_ManyInfections1_cerebral, file = "./Objs/ManyInfections1_Curves_cerebral.rda")
