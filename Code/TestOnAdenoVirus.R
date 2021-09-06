@@ -95,11 +95,11 @@ all(rownames(Pheno_Adenovirus1) == colnames(Expr_Adenovirus1))
 ClassAdenoVsNormal <- Pheno_Adenovirus1$DiseaseStatus2
 
 ####################################
-## Load the complicated malaria signature
+## Load the severe malaria signature
 load("./Objs/RF_Comp.rda")
 
 #################
-## Predict in the Adenovirus dataset (DHF vs DF)
+## Predict in the Adenovirus dataset
 
 TestingData_Adenovirus <- t(Expr_Adenovirus1)
 
@@ -111,16 +111,20 @@ ROCTest
 
 
 ####################################
-## Load the cerebral malaria
+## Load the cerebral malaria signature
 load("./Objs/RF_Cerebral.rda")
 
 #################
-## Predict in the Adenovirus dataset (DHF vs DF)
+## Predict in the Adenovirus dataset
 
-#TestingData_Adenovirus <- t(Expr_Adenovirus1)
+PredVotes_Adenovirus_cerebral <- predict(RF_Cerebral, newdata = TestingData_Adenovirus, type = "vote")
+PredResponse_Adenovirus_cerebral <- predict(RF_Cerebral, TestingData_Adenovirus, type="response")
 
-PredVotes_Adenovirus <- predict(RF_Cerebral, newdata = TestingData_Adenovirus, type = "vote")
-PredResponse_Adenovirus <- predict(RF_Cerebral, TestingData_Adenovirus, type="response")
+# For ROC and PRC curves
+sscurves_Adenovirus_cerebral <- evalmod(scores = PredVotes_Adenovirus_cerebral[,2], labels = ClassAdenoVsNormal)
+sscurves_Adenovirus_cerebral
+ROC_Adenovirus_cerebral <- autoplot(sscurves_Adenovirus_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE40396 (Adenovirus)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.48"), size = 4)
+PRC_Adenovirus_cerebral <- autoplot(sscurves_Adenovirus_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE40396 (Adenovirus)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.41"), size = 4)
 
-ROCTest <- roc(ClassInfectionVsNormal, PredVotes_Adenovirus[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
-ROCTest
+save(ROC_Adenovirus_cerebral, PRC_Adenovirus_cerebral, file = "./Objs/Adenovirus1_Curves_cerebral.rda")
+
