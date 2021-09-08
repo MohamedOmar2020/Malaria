@@ -50,11 +50,11 @@ all(rownames(Pheno_HIVandTB) == colnames(Expr_HIVandTB))
 ClassHIVandTBVsHealthy<- Pheno_HIVandTB$DiseaseStatus
 
 ####################################
-## Load the model
+## Load the severe malaria signature
 load("./Objs/RF_Comp.rda")
 
 #################
-## Predict in the WestNile dataset (WestNile vs normal)
+## Predict
 
 TestingData_HIVandTB <- t(Expr_HIVandTB)
 
@@ -76,16 +76,21 @@ save(ROC_HIVandTB, PRC_HIVandTB, file = "./Objs/HIVandTB_Curves.rda")
 
 
 ####################################
-## Load the cerebral malaria
+## Load the cerebral malaria signature
 load("./Objs/RF_Cerebral.rda")
 
 #################
-## Predict in the WestNile dataset (DHF vs DF)
+## Predict
+PredVotes_HIVandTB_cerebral <- predict(RF_Cerebral, newdata = TestingData_HIVandTB, type = "vote")
+PredResponse_HIVandTB_cerebral <- predict(RF_Cerebral, TestingData_HIVandTB, type="response")
 
-#TestingData_ManyInfections <- t(Expr_HIVandTB)
+ROCTest_cerebral <- roc(ClassHIVandTBVsHealthy, PredVotes_HIVandTB_cerebral[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest_cerebral
 
-PredVotes_HIVandTB <- predict(RF_Cerebral, newdata = TestingData_HIVandTB, type = "vote")
-PredResponse_HIVandTB <- predict(RF_Cerebral, TestingData_HIVandTB, type="response")
+# For ROC and PRC curves
+sscurves_HIVandTB_cerebral <- evalmod(scores = PredVotes_HIVandTB_cerebral[,2], labels = ClassHIVandTBVsHealthy)
+sscurves_HIVandTB_cerebral
+ROC_HIVandTB_cerebral <- autoplot(sscurves_HIVandTB_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE39940 (HIV +ve or active TB vs healthy)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.38"), size = 4)
+PRC_HIVandTB_cerebral <- autoplot(sscurves_HIVandTB_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE39940 (HIV +ve or active TB vs healthy)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.47"), size = 4)
 
-ROCTest <- roc(ClassHIVandTBVsHealthy, PredVotes_HIVandTB[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
-ROCTest
+save(ROC_HIVandTB_cerebral, PRC_HIVandTB_cerebral, file = "./Objs/HIVandTB_Curves_cerebral.rda")

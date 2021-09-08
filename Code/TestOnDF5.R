@@ -53,11 +53,11 @@ all(rownames(Pheno_Dengue5) == colnames(Expr_Dengue5))
 ClassDFvsComDengue <- Pheno_Dengue5$DiseaseStatus
 
 ####################################
-## Load the complicated malaria signature
+## Load the severe malaria signature
 load("./Objs/RF_Comp.rda")
 
 #################
-## Predict in the Dengue dataset (DHF vs DF)
+## Predict
 
 TestingData_Dengue <- t(Expr_Dengue5)
 
@@ -77,18 +77,22 @@ save(ROC_Dengue5, PRC_Dengue5, file = "./Objs/Dengue5_Curves.rda")
 
 
 ####################################
-## Load the cerebral malaria
+## Load the cerebral malaria signature
 load("./Objs/RF_Cerebral.rda")
 
 #################
-## Predict in the Dengue dataset (DSS vs DF)
+## Predict
+PredVotes_Dengue_cerebral <- predict(RF_Cerebral, newdata = TestingData_Dengue, type = "vote")
+PredResponse_Dengue_cerebral <- predict(RF_Cerebral, TestingData_Dengue, type="response")
 
-#TestingData_Dengue <- t(Expr_Dengue5)
+ROCTest_cerebral <- roc(ClassDFvsComDengue, PredVotes_Dengue_cerebral[,2], plot = F, print.auc = TRUE, levels = c("DF", "ComplicatedDF"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest_cerebral
 
-PredVotes_Dengue <- predict(RF_Cerebral, newdata = TestingData_Dengue, type = "vote")
-PredResponse_Dengue <- predict(RF_Cerebral, TestingData_Dengue, type="response")
+# For ROC and PRC curves
+sscurves_Dengue5_cerebral <- evalmod(scores = PredVotes_Dengue_cerebral[,2], labels = ClassDFvsComDengue)
+sscurves_Dengue5_cerebral
+ROC_Dengue5_cerebral <- autoplot(sscurves_Dengue5_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE17924 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.66"), size = 3)
+PRC_Dengue5_cerebral <- autoplot(sscurves_Dengue5_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE17924 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.78"), size = 3)
 
-ROCTest <- roc(ClassDFvsComDengue, PredVotes_Dengue[,2], plot = F, print.auc = TRUE, levels = c("DF", "ComplicatedDF"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
-ROCTest
-
+save(ROC_Dengue5_cerebral, PRC_Dengue5_cerebral, file = "./Objs/Dengue5_Curves_cerebral.rda")
 

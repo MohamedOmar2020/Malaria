@@ -48,11 +48,11 @@ all(rownames(Pheno_TB2) == colnames(Expr_TB2))
 ClassTBandPNAVsLatentTB<- Pheno_TB2$DiseaseStatus
 
 ####################################
-## Load the model
+## Load the severe malaria signature
 load("./Objs/RF_Comp.rda")
 
 #################
-## Predict in the WestNile dataset (WestNile vs normal)
+## Predict
 
 TestingData_TB2 <- t(Expr_TB2)
 
@@ -71,19 +71,30 @@ PRC_TB2 <- autoplot(sscurves_TB2, curvetype = c("PRC")) + labs(title = "PRC curv
 save(ROC_TB2, PRC_TB2, file = "./Objs/TB2_Curves.rda")
 
 ########################################################################################
-
-
 ####################################
-## Load the cerebral malaria
+## Load the cerebral malaria signature
 load("./Objs/RF_Cerebral.rda")
 
 #################
-## Predict in the WestNile dataset (DHF vs DF)
-RF_Cerebral$importance <- RF_Cerebral$importance[rownames(RF_Cerebral$importance) %in% rownames(Expr_TB2), ]
-#TestingData_ManyInfections <- t(Expr_TB2)
+## Predict
+CommonGns <- intersect(rownames(Expr_TB2), rownames(RF_Cerebral$importance))
+RF_Cerebral$importance <- RF_Cerebral$importance[CommonGns, ]
+RF_Cerebral$importanceSD <- RF_Cerebral$importanceSD[CommonGns, ]
+RF_Cerebral$forest$ncat <- RF_Cerebral$forest$ncat[CommonGns]
 
-PredVotes_TB2 <- predict(RF_Cerebral, newdata = TestingData_TB2, type = "vote")
-PredResponse_TB2 <- predict(RF_Cerebral, TestingData_TB2, type="response")
+######
+PredVotes_TB2_cerebral <- predict(RF_Cerebral, newdata = TestingData_TB2, type = "vote")
+PredResponse_TB2_cerebral <- predict(RF_Cerebral, TestingData_TB2, type="response")
 
-ROCTest <- roc(ClassTBandPNAVsLatentTB, PredVotes_TB2[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
-ROCTest
+ROCTest_cerebral <- roc(ClassTBandPNAVsLatentTB, PredVotes_TB2_cerebral[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest_cerebral
+
+# For ROC and PRC curves
+sscurves_TB2_cerebral <- evalmod(scores = PredVotes_TB2_cerebral[,2], labels = ClassTBandPNAVsLatentTB)
+sscurves_TB2_cerebral
+ROC_TB2_cerebral <- autoplot(sscurves_TB2_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE73408 (primary TB and pneumonia vs latent TB)") + annotate("text", x = .65, y = .25, label = paste("AUC = ", round(ROCTest_cerebral$auc, 2)), size = 4)
+PRC_TB2_cerebral <- autoplot(sscurves_TB2_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE73408 (primary TB and pneumonia vs latent TB)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.83"), size = 4)
+
+save(ROC_TB2_cerebral, PRC_TB2_cerebral, file = "./Objs/TB2_Curves_cerebral.rda")
+
+

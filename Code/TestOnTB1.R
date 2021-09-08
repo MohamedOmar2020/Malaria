@@ -49,11 +49,11 @@ all(rownames(Pheno_TB1) == colnames(Expr_TB1))
 ClassTBVsHealthy<- Pheno_TB1$DiseaseStatus
 
 ####################################
-## Load the model
+## Load the severe malaria signature
 load("./Objs/RF_Comp.rda")
 
 #################
-## Predict in the WestNile dataset (WestNile vs normal)
+## Predict
 
 TestingData_TB1 <- t(Expr_TB1)
 
@@ -75,16 +75,22 @@ save(ROC_TB1, PRC_TB1, file = "./Objs/TB1_Curves.rda")
 
 
 ####################################
-## Load the cerebral malaria
+## Load the cerebral malaria signature
 load("./Objs/RF_Cerebral.rda")
 
 #################
-## Predict in the WestNile dataset (DHF vs DF)
+## Predict
+PredVotes_TB1_cerebral <- predict(RF_Cerebral, newdata = TestingData_TB1, type = "vote")
+PredResponse_TB1_cerebral <- predict(RF_Cerebral, TestingData_TB1, type="response")
 
-#TestingData_ManyInfections <- t(Expr_TB1)
+ROCTest_cerebral <- roc(ClassTBVsHealthy, PredVotes_TB1_cerebral[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest_cerebral
 
-PredVotes_TB1 <- predict(RF_Cerebral, newdata = TestingData_TB1, type = "vote")
-PredResponse_TB1 <- predict(RF_Cerebral, TestingData_TB1, type="response")
+# For ROC and PRC curves
+sscurves_TB1_cerebral <- evalmod(scores = PredVotes_TB1_cerebral[,2], labels = ClassTBVsHealthy)
+sscurves_TB1_cerebral
+ROC_TB1_cerebral <- autoplot(sscurves_TB1_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE19444 (primary TB vs latent TB and healthy)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.35"), size = 4)
+PRC_TB1_cerebral <- autoplot(sscurves_TB1_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE19444 (primary TB vs latent TB and healthy)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.34"), size = 4)
 
-ROCTest <- roc(ClassTBVsHealthy, PredVotes_TB1[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
-ROCTest
+save(ROC_TB1_cerebral, PRC_TB1_cerebral, file = "./Objs/TB1_Curves_cerebral.rda")
+

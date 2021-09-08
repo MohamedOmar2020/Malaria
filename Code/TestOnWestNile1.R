@@ -61,7 +61,7 @@ all(rownames(Pheno_WestNile1) == colnames(Expr_WestNile1))
 ClassSeverVsAsymp <- Pheno_WestNile1$DiseaseStatus
 
 ####################################
-## Load the model
+## Load the severe malaria signature
 load("./Objs/RF_Comp.rda")
 
 #################
@@ -87,16 +87,22 @@ save(ROC_WestNile, PRC_WestNile, file = "./Objs/WestNile1_Curves.rda")
 
 
 ####################################
-## Load the cerebral malaria
+## Load the cerebral malaria signature
 load("./Objs/RF_Cerebral.rda")
 
 #################
 ## Predict in the WestNile dataset (DHF vs DF)
+PredVotes_WestNile_cerebral <- predict(RF_Cerebral, newdata = TestingData_WestNile, type = "vote")
+PredResponse_WestNile_cerebral <- predict(RF_Cerebral, TestingData_WestNile, type="response")
 
-#TestingData_WestNile <- t(Expr_WestNile1)
+ROCTest_cerebral <- roc(ClassSeverVsAsymp, PredVotes_WestNile_cerebral[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest_cerebral
 
-PredVotes_WestNile <- predict(RF_Cerebral, newdata = TestingData_WestNile, type = "vote")
-PredResponse_WestNile <- predict(RF_Cerebral, TestingData_WestNile, type="response")
+# For ROC and PRC curves
+sscurves_WestNile1_cerebral <- evalmod(scores = PredVotes_WestNile_cerebral[,2], labels = ClassSeverVsAsymp)
+sscurves_WestNile1_cerebral
+ROC_WestNile_cerebral <- autoplot(sscurves_WestNile1_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE46681 (West Nile)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.40"), size = 4)
+PRC_WestNile_cerebral <- autoplot(sscurves_WestNile1_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE46681 (West Nile)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.44"), size = 4)
 
-ROCTest <- roc(ClassSeverVsAsymp, PredVotes_WestNile[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
-ROCTest
+save(ROC_WestNile_cerebral, PRC_WestNile_cerebral, file = "./Objs/WestNile1_Curves_cerebral.rda")
+

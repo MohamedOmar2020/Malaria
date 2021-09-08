@@ -77,39 +77,46 @@ save(ROC_Adenovirus, PRC_Adenovirus, file = "./Objs/Adenovirus1_Curves.rda")
 
 ########################################################################################
 #########################################################################################
-###### AdenoVirus vs normal
-
-### Modify the phenotype
-# Remove controls
-
-# Pheno1
-Pheno_Adenovirus1 <- Pheno_Adenovirus1[Pheno_Adenovirus1$`pathogen:ch1` %in%  c("Adenovirus", "None"), ]
-Pheno_Adenovirus1$DiseaseStatus2 <- as.factor(Pheno_Adenovirus1$`pathogen:ch1`)
-levels(Pheno_Adenovirus1$DiseaseStatus2) <- c("AdenoVirus", "control") 
-table(Pheno_Adenovirus1$DiseaseStatus2)
-Pheno_Adenovirus1$DiseaseStatus2 <- factor(Pheno_Adenovirus1$DiseaseStatus2, levels = c("control", "AdenoVirus"))
-
-Expr_Adenovirus1 <- Expr_Adenovirus1[, colnames(Expr_Adenovirus1) %in% rownames(Pheno_Adenovirus1)]
-all(rownames(Pheno_Adenovirus1) == colnames(Expr_Adenovirus1))
-
-ClassAdenoVsNormal <- Pheno_Adenovirus1$DiseaseStatus2
-
-####################################
-## Load the severe malaria signature
-load("./Objs/RF_Comp.rda")
-
-#################
-## Predict in the Adenovirus dataset
-
-TestingData_Adenovirus <- t(Expr_Adenovirus1)
-
-PredVotes_Adenovirus <- predict(RF_Comp, newdata = TestingData_Adenovirus, type = "vote")
-PredResponse_Adenovirus <- predict(RF_Comp, TestingData_Adenovirus, type="response")
-
-ROCTest <- roc(ClassAdenoVsNormal, PredVotes_Adenovirus[,2], plot = F, print.auc = TRUE, levels = c("control", "AdenoVirus"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
-ROCTest
-
-
+# ###### AdenoVirus vs normal
+# 
+# ### Modify the phenotype
+# # keep just adenovirus
+# 
+# # Pheno1
+# Pheno_Adenovirus1 <- Pheno_Adenovirus1[Pheno_Adenovirus1$`pathogen:ch1` %in%  c("Adenovirus", "None"), ]
+# Pheno_Adenovirus1$DiseaseStatus2 <- as.factor(Pheno_Adenovirus1$`pathogen:ch1`)
+# levels(Pheno_Adenovirus1$DiseaseStatus2) <- c("AdenoVirus", "control") 
+# table(Pheno_Adenovirus1$DiseaseStatus2)
+# Pheno_Adenovirus1$DiseaseStatus2 <- factor(Pheno_Adenovirus1$DiseaseStatus2, levels = c("control", "AdenoVirus"))
+# 
+# Expr_Adenovirus1 <- Expr_Adenovirus1[, colnames(Expr_Adenovirus1) %in% rownames(Pheno_Adenovirus1)]
+# all(rownames(Pheno_Adenovirus1) == colnames(Expr_Adenovirus1))
+# 
+# ClassAdenoVsNormal <- Pheno_Adenovirus1$DiseaseStatus2
+# 
+# ####################################
+# ## Load the severe malaria signature
+# load("./Objs/RF_Comp.rda")
+# 
+# #################
+# ## Predict in the Adenovirus dataset
+# 
+# TestingData_Adenovirus <- t(Expr_Adenovirus1)
+# 
+# PredVotes_Adenovirus <- predict(RF_Comp, newdata = TestingData_Adenovirus, type = "vote")
+# PredResponse_Adenovirus <- predict(RF_Comp, TestingData_Adenovirus, type="response")
+# 
+# ROCTest <- roc(ClassAdenoVsNormal, PredVotes_Adenovirus[,2], plot = F, print.auc = TRUE, levels = c("control", "AdenoVirus"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+# ROCTest
+# 
+# # For ROC and PRC curves
+# sscurves_Adenovirus1 <- evalmod(scores = PredVotes_Adenovirus[,2], labels = ClassAdenoVsNormal)
+# sscurves_Adenovirus1
+# ROC_Adenovirus <- autoplot(sscurves_Adenovirus1, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE40396 (Adenovirus)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.68"), size = 4)
+# PRC_Adenovirus <- autoplot(sscurves_Adenovirus1, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE40396 (Adenovirus)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.54"), size = 4)
+# 
+# save(ROC_Adenovirus, PRC_Adenovirus, file = "./Objs/Adenovirus1_Curves.rda")
+# 
 ####################################
 ## Load the cerebral malaria signature
 load("./Objs/RF_Cerebral.rda")
@@ -121,10 +128,10 @@ PredVotes_Adenovirus_cerebral <- predict(RF_Cerebral, newdata = TestingData_Aden
 PredResponse_Adenovirus_cerebral <- predict(RF_Cerebral, TestingData_Adenovirus, type="response")
 
 # For ROC and PRC curves
-sscurves_Adenovirus_cerebral <- evalmod(scores = PredVotes_Adenovirus_cerebral[,2], labels = ClassAdenoVsNormal)
+sscurves_Adenovirus_cerebral <- evalmod(scores = PredVotes_Adenovirus_cerebral[,2], labels = ClassInfectionVsNormal)
 sscurves_Adenovirus_cerebral
-ROC_Adenovirus_cerebral <- autoplot(sscurves_Adenovirus_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE40396 (Adenovirus)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.48"), size = 4)
-PRC_Adenovirus_cerebral <- autoplot(sscurves_Adenovirus_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE40396 (Adenovirus)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.41"), size = 4)
+ROC_Adenovirus_cerebral <- autoplot(sscurves_Adenovirus_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE40396 (Adenovirus)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.35"), size = 4)
+PRC_Adenovirus_cerebral <- autoplot(sscurves_Adenovirus_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE40396 (Adenovirus)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.62"), size = 4)
 
 save(ROC_Adenovirus_cerebral, PRC_Adenovirus_cerebral, file = "./Objs/Adenovirus1_Curves_cerebral.rda")
 

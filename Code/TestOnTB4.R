@@ -53,11 +53,11 @@ all(rownames(Pheno_TB4) == colnames(Expr_TB4))
 ClassTBVsHealthy<- Pheno_TB4$DiseaseStatus
 
 ####################################
-## Load the model
+## Load the severe malaria signauture
 load("./Objs/RF_Comp.rda")
 
 #################
-## Predict in the WestNile dataset (WestNile vs normal)
+## Predict
 
 TestingData_TB4 <- t(Expr_TB4)
 
@@ -76,19 +76,23 @@ PRC_TB4 <- autoplot(sscurves_TB4, curvetype = c("PRC")) + labs(title = "PRC curv
 save(ROC_TB4, PRC_TB4, file = "./Objs/TB4_Curves.rda")
 
 ########################################################################################
-
-
 ####################################
-## Load the cerebral malaria
+## Load the cerebral malaria signauture
 load("./Objs/RF_Cerebral.rda")
 
 #################
-## Predict in the WestNile dataset (DHF vs DF)
+## Predict
+PredVotes_TB4_cerebral <- predict(RF_Cerebral, newdata = TestingData_TB4, type = "vote")
+PredResponse_TB4_cerebral <- predict(RF_Cerebral, TestingData_TB4, type="response")
 
-#TestingData_ManyInfections <- t(Expr_TB4)
+ROCTest_cerebral <- roc(ClassTBVsHealthy, PredVotes_TB4_cerebral[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest_cerebral
 
-PredVotes_TB4 <- predict(RF_Cerebral, newdata = TestingData_TB4, type = "vote")
-PredResponse_TB4 <- predict(RF_Cerebral, TestingData_TB4, type="response")
+# For ROC and PRC curves
+sscurves_TB4_cerebral <- evalmod(scores = PredVotes_TB4_cerebral[,2], labels = ClassTBVsHealthy)
+sscurves_TB4_cerebral
+ROC_TB4_cerebral <- autoplot(sscurves_TB4_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE83456 (pulomnary and extrapulmonary TB vs healthy)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.27"), size = 4)
+PRC_TB4_cerebral <- autoplot(sscurves_TB4_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE83456 (pulomnary and extrapulmonary TB vs healthy)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.47"), size = 4)
 
-ROCTest <- roc(ClassTBVsHealthy, PredVotes_TB4[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
-ROCTest
+save(ROC_TB4_cerebral, PRC_TB4_cerebral, file = "./Objs/TB4_Curves_cerebral.rda")
+

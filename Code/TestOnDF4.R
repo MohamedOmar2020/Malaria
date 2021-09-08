@@ -56,7 +56,7 @@ all(rownames(Pheno_Dengue4) == colnames(Expr_Dengue4))
 ClassDFvsnormal <- Pheno_Dengue4$DiseaseStatus
 
 ####################################
-## Load the complicated malaria signature
+## Load the severe malaria signature
 load("./Objs/RF_Comp.rda")
 
 #################
@@ -80,20 +80,24 @@ save(ROC_Dengue4, PRC_Dengue4, file = "./Objs/Dengue4_Curves.rda")
 
 
 ####################################
-## Load the cerebral malaria
+## Load the cerebral malaria signature
 load("./Objs/RF_Cerebral.rda")
 
 #################
-## Predict in the Dengue dataset (DSS vs DF)
+## Predict
+PredVotes_Dengue_cerebral <- predict(RF_Cerebral, newdata = TestingData_Dengue, type = "vote")
+PredResponse_Dengue_cerebral <- predict(RF_Cerebral, TestingData_Dengue, type="response")
 
-#TestingData_Dengue <- t(Expr_Dengue4)
+ROCTest_cerebral <- roc(ClassDFvsnormal, PredVotes_Dengue_cerebral[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest_cerebral
 
-PredVotes_Dengue <- predict(RF_Cerebral, newdata = TestingData_Dengue, type = "vote")
-PredResponse_Dengue <- predict(RF_Cerebral, TestingData_Dengue, type="response")
+# For ROC and PRC curves
+sscurves_Dengue4_cerebral <- evalmod(scores = PredVotes_Dengue_cerebral[,2], labels = ClassDFvsnormal)
+sscurves_Dengue4_cerebral
+ROC_Dengue4_cerebral <- autoplot(sscurves_Dengue4_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE18090 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUC = ", round(ROCTest_cerebral$auc, 2)), size = 3)
+PRC_Dengue4_cerebral <- autoplot(sscurves_Dengue4_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE18090 (Dengue fever)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.74"), size = 3)
 
-ROCTest <- roc(ClassDFvsnormal, PredVotes_Dengue[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
-ROCTest
-
+save(ROC_Dengue4_cerebral, PRC_Dengue4_cerebral, file = "./Objs/Dengue4_Curves_cerebral.rda")
 
 ######################################################################################
 ###### DF and DHF vs non dengue
@@ -129,8 +133,8 @@ ROCTest
 # For ROC and PRC curves
 sscurves_Dengue4 <- evalmod(scores = PredVotes_Dengue[,2], labels = ClassDFvsDHF)
 sscurves_Dengue4
-ROC_Dengue4_DFvsDHF <- autoplot(sscurves_Dengue4, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE18090 (DF vs DHF)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.43"), size = 5)
-PRC_Dengue4_DFvsDHF <- autoplot(sscurves_Dengue4, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE18090 (DF vs DHF)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.725"), size = 5)
+ROC_Dengue4_DFvsDHF <- autoplot(sscurves_Dengue4, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE18090 (DF vs DHF)") + annotate("text", x = .65, y = .25, label = paste("AUC = ", round(ROCTest$auc, 2)), size = 5)
+PRC_Dengue4_DFvsDHF <- autoplot(sscurves_Dengue4, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE18090 (DF vs DHF)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.75"), size = 5)
 
 save(ROC_Dengue4_DFvsDHF, PRC_Dengue4_DFvsDHF, file = "./Objs/Dengue4_Curves_DFvsDHF.rda")
 
@@ -140,14 +144,18 @@ save(ROC_Dengue4_DFvsDHF, PRC_Dengue4_DFvsDHF, file = "./Objs/Dengue4_Curves_DFv
 load("./Objs/RF_Cerebral.rda")
 
 #################
-## Predict in the Dengue dataset (DSS vs DF)
+## Predict
+PredVotes_Dengue_cerebral <- predict(RF_Cerebral, newdata = TestingData_Dengue, type = "vote")
+PredResponse_Dengue_cerebral <- predict(RF_Cerebral, TestingData_Dengue, type="response")
 
-#TestingData_Dengue <- t(Expr_Dengue4)
+ROCTest_cerebral <- roc(ClassDFvsDHF, PredVotes_Dengue_cerebral[,2], plot = F, print.auc = TRUE, levels = c("DF", "DHF"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+ROCTest_cerebral
 
-PredVotes_Dengue <- predict(RF_Cerebral, newdata = TestingData_Dengue, type = "vote")
-PredResponse_Dengue <- predict(RF_Cerebral, TestingData_Dengue, type="response")
+# For ROC and PRC curves
+sscurves_Dengue4_cerebral <- evalmod(scores = PredVotes_Dengue_cerebral[,2], labels = ClassDFvsDHF)
+sscurves_Dengue4_cerebral
+ROC_Dengue4_DFvsDHF_cerebral <- autoplot(sscurves_Dengue4_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE18090 (DF vs DHF)") + annotate("text", x = .65, y = .25, label = paste("AUC = ", round(ROCTest_cerebral$auc, 2)), size = 5)
+PRC_Dengue4_DFvsDHF_cerebral <- autoplot(sscurves_Dengue4_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE18090 (DF vs DHF)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.60"), size = 5)
 
-ROCTest <- roc(ClassDFvsDHF, PredVotes_Dengue[,2], plot = F, print.auc = TRUE, levels = c("DF", "DHF"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
-ROCTest
-
+save(ROC_Dengue4_DFvsDHF_cerebral, PRC_Dengue4_DFvsDHF_cerebral, file = "./Objs/Dengue4_Curves_DFvsDHF_cerebral.rda")
 
