@@ -34,6 +34,9 @@ load("./Objs/HIVandTB_Curves.rda")
 # West Nile virus
 load("./Objs/WestNile1_Curves.rda")
 
+# Meningitis
+load("./Objs/Meningitis_Curves_severe.rda")
+
 #############################################
 ROC_Dengue$labels$title <- "GSE51808 (DF vs healthy)"
 ROC_Dengue$theme$plot.title$size <- 6
@@ -73,6 +76,12 @@ ROC_HIVandTB$theme$plot.title$size <- 6
 ROC_WestNile$labels$title <- "GSE46681 (Asymptomatic vs severe West Nile viral infection)"
 ROC_WestNile$theme$plot.title$size <- 6
 
+
+ROC_Meningitis2_severe$labels$title <- "GSE80496"
+ROC_Meningitis4_severe$labels$title <- "GSE40586"
+ROC_Meningitis2_severe$theme$plot.title$size <- 9
+ROC_Meningitis4_severe$theme$plot.title$size <- 9
+
 ##############################################
 ## Dengue Fever
 tiff(filename = "./Figs/CompMalariaSigPerformance_Dengue.tiff", width = 2500, height = 2000, res = 350)
@@ -80,7 +89,7 @@ tiff(filename = "./Figs/CompMalariaSigPerformance_Dengue.tiff", width = 2500, he
 )) +
   #plot_layout(widths = c(0.4, 1)) + 
   plot_annotation(
-    title = 'The performance of the severe malaria signatures in dengue fever datasets',
+    title = 'The performance of the severe malaria signature in dengue fever datasets',
     tag_levels = c('A', '1'),
     theme = theme(plot.title = element_text(size = 12, face = "bold"))
   )
@@ -93,7 +102,7 @@ png(filename = "./Figs/CompMalariaSigPerformance_TB.png", width = 2500, height =
 ) +
   #plot_layout(widths = c(0.4, 1)) + 
   plot_annotation(
-    title = 'The performance of the severe malaria signatures in TB datasets',
+    title = 'The performance of the severe malaria signature in TB datasets',
     tag_levels = c('A', '1'),
     theme = theme(plot.title = element_text(size = 15, face = "bold"))
   )
@@ -107,10 +116,22 @@ png(filename = "./Figs/CompMalariaSigPerformance_OtherInfections.png", width = 2
 ) +
   #plot_layout(widths = c(0.4, 1)) + 
   plot_annotation(
-    title = 'The performance of the severe malaria signatures in other viral and bacterial infections datasets',
+    title = 'The performance of the severe malaria signature in other viral and bacterial infections datasets',
     tag_levels = c('A', '1'),
     theme = theme(plot.title = element_text(size = 12, face = "bold"))
   )
 dev.off()
 
 ##############################################
+## Meningitis
+tiff(filename = "./Figs/new/SevereMalariaSigPerformance_Meningitis.tiff", width = 2500, height = 2000, res = 300)
+(ROC_Meningitis2_severe | ROC_Meningitis4_severe & theme(plot.tag = element_text(size = 12))
+) +
+  #plot_layout(widths = c(0.4, 1)) + 
+  plot_annotation(
+    title = 'The performance of the severe malaria signature in meningitis datasets',
+    tag_levels = c('A', '1'),
+    theme = theme(plot.title = element_text(size = 12, face = "bold"))
+  )
+dev.off()
+

@@ -33,6 +33,9 @@ load("./Objs/HIVandTB_Curves_cerebral.rda")
 # West Nile virus
 load("./Objs/WestNile1_Curves_cerebral.rda")
 
+# Meningitis
+load("./Objs/Meningitis_Curves_cerebral.rda")
+
 #############################################
 ROC_Dengue_cerebral$labels$title <- "GSE51808 (DF vs healthy)"
 ROC_Dengue_cerebral$theme$plot.title$size <- 6
@@ -71,6 +74,12 @@ ROC_HIVandTB_cerebral$labels$title <- "GSE39940 (HIV/TB vs healthy)"
 ROC_HIVandTB_cerebral$theme$plot.title$size <- 6
 ROC_WestNile_cerebral$labels$title <- "GSE46681 (Asymptomatic vs severe West Nile viral infection)"
 ROC_WestNile_cerebral$theme$plot.title$size <- 6
+
+ROC_Meningitis2_cerebral$labels$title <- "GSE80496"
+ROC_Meningitis4_cerebral$labels$title <- "GSE40586"
+ROC_Meningitis2_cerebral$theme$plot.title$size <- 9
+ROC_Meningitis4_cerebral$theme$plot.title$size <- 9
+
 
 ##############################################
 ## Dengue Fever
@@ -112,4 +121,16 @@ png(filename = "./Figs/CerebralMalariaSigPerformance_OtherInfections.png", width
   )
 dev.off()
 
-##############################################
+#############################################
+## Meningitis
+tiff(filename = "./Figs/new/CerebralMalariaSigPerformance_Meningitis.tiff", width = 2500, height = 2000, res = 300)
+(ROC_Meningitis2_cerebral | ROC_Meningitis4_cerebral & theme(plot.tag = element_text(size = 12))
+) +
+  #plot_layout(widths = c(0.4, 1)) + 
+  plot_annotation(
+    title = 'The performance of the cerebral malaria signature in meningitis datasets',
+    tag_levels = c('A', '1'),
+    theme = theme(plot.title = element_text(size = 12, face = "bold"))
+  )
+dev.off()
+
