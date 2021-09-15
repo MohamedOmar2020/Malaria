@@ -1,0 +1,431 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin17.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+* Project '~/' loaded. [renv 0.13.2]
+> ############################################################################
+> 
+> 
+> rm(list = ls())
+> 
+> setwd("~/Documents/Research/Projects/Malaria")
+> 
+> renv::activate("~/Documents/Research/Projects/Malaria")
+* Project '~/Documents/Research/Projects/Malaria' loaded. [renv 0.14.0]
+Warning message:
+renv 0.14.0 was loaded from project library, but this project is configured to use renv 0.12.2.
+Use `renv::record("renv@0.14.0")` to record renv 0.14.0 in the lockfile.
+Use `renv::restore(packages = "renv")` to install renv 0.12.2 into the project library. 
+> 
+> ### Load library
+> library(RRF)
+RRF 1.9.1
+Type rrfNews() to see new features/changes/bug fixes.
+> require(limma)
+Loading required package: limma
+> library(randomForest)
+Registered S3 method overwritten by 'randomForest':
+  method      from
+  plot.margin RRF 
+randomForest 4.6-14
+Type rfNews() to see new features/changes/bug fixes.
+
+Attaching package: ‘randomForest’
+
+The following objects are masked from ‘package:RRF’:
+
+    classCenter, combine, getTree, grow, importance, margin, MDSplot,
+    na.roughfix, outlier, partialPlot, treesize, varImpPlot, varUsed
+
+> library(boot)
+> library(precrec)
+> library(pheatmap)
+> library(randomForestExplainer)
+Registered S3 method overwritten by 'GGally':
+  method from   
+  +.gg   ggplot2
+> library(inTrees)
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following object is masked from ‘package:precrec’:
+
+    auc
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(patchwork)
+> library(mltools)
+> library(caret)
+Loading required package: lattice
+
+Attaching package: ‘lattice’
+
+The following object is masked from ‘package:boot’:
+
+    melanoma
+
+Loading required package: ggplot2
+
+Attaching package: ‘ggplot2’
+
+The following object is masked from ‘package:randomForest’:
+
+    margin
+
+The following object is masked from ‘package:RRF’:
+
+    margin
+
+> 
+> ## Load data
+> load("./Objs/MalariaDataGood_NCvsC.rda")
+> load("./Objs/PlacentalMalaria.rda")
+> #load("./Objs/CerebralExtraValidation2.rda")
+> 
+> # Quantile normalization
+> usedTrainMat <- normalizeBetweenArrays(mixTrainMat, method = "quantile")
+> usedTestMat <- normalizeBetweenArrays(mixTestMat, method = "quantile")
+> 
+> # Associated groups
+> usedTrainGroup <- mixTrainGroup
+> usedTestGroup <- mixTestGroup
+> 
+> # Transpose the matrix
+> PredictorData <- t(usedTrainMat)
+> 
+> # Bind expression with the groups
+> DataTrain <- cbind(PredictorData, usedTrainGroup)
+> DataTrain <- as.data.frame(DataTrain)
+> DataTrain$usedTrainGroup <- as.factor(DataTrain$usedTrainGroup)
+> levels(DataTrain[, "usedTrainGroup"]) <- c("nonCerebral", "cerebral")
+> 
+> names(DataTrain) <- make.names(names(DataTrain))
+> 
+> # Feature selection via RRF
+> #lambda <- 0.8 # Both the number of features and the quality of the features are quite sensitive to lambda for RRF. A smaller lambda leads to fewer features.
+> 
+> # The function for bootstraping
+> # RF_Strap <- function(data, indices) {
+> #   d <- data[indices, ] # allows boot to select sample
+> #   rrf <- RRF(usedTrainGroup~., data = d, flagReg = 1, coefReg=lambda) # coefReg is a constant for all variables.   #either "X,as.factor(class)" or data frame like "Y~., data=data" is fine, but the later one is significantly slower.
+> #   TrainData <- d
+> #   TrainData$usedTrainGroup <- NULL
+> #   subsetRRF <- rrf$feaSet
+> #   SelFeats <- colnames(TrainData[, subsetRRF])
+> #   return(as.vector(SelFeats[1:30]))
+> # }
+> # 
+> # set.seed(333)
+> # bootobject_Cerebral <- boot(data = DataTrain, statistic = RF_Strap, R = 100, parallel = "multicore", ncpus = 15)
+> # 
+> # save(bootobject_Cerebral, file = "./Objs/bootobject_Cerebral.rda")
+> 
+> load("./Objs/bootobject_Cerebral.rda")
+> 
+> OutFeat <- bootobject_Cerebral$t
+> 
+> #####################################
+> ## Select the most frequent features
+> u_genes <- na.omit(unique(as.vector(as.matrix(OutFeat))))
+> find_gen_rep <- function(dat, gene){
++   # NAs create problems in the function so we substitute that with "unknown"
++   dat[is.na(dat)] <- "unknown"
++   rep_rows <- sum(apply(dat, 1,  function(x) any(x == gene)))
++   names(rep_rows) <- gene
++   as.data.frame(rep_rows)
++ }
+> list_results <- lapply(u_genes, find_gen_rep, dat = OutFeat)
+> sum_result <- do.call(rbind, list_results)
+> 
+> sum_result$Gene <- rownames(sum_result)
+> sum_result <- sum_result[sum_result$rep_rows >= 5, ]
+> Sel <- sum_result$Gene
+> Sel
+ [1] "TRIP12"  "PUM2"    "MYH11"   "SETX"    "ANK2"    "RABEP1"  "ELF2"   
+ [8] "MORC2"   "CD53"    "ZNF197"  "MAP3K13" "KRIT1"   "PGR"     "EPHA4"  
+[15] "USP34"   "THRB"    "ATP5G3"  "OGT"     "DGKQ"    "XRCC5"   "LARP4"  
+[22] "SCN2B"   "CDH8"    "SPATS2L" "KPNA6"   "VPS13B"  "PPP6R3"  "MREG"   
+[29] "TTC17"   "CHRNA10" "ASB7"    "C18orf8"
+> 
+> ####################################
+> # Frequency plot
+> sum_result <- sum_result[order(sum_result$rep_rows, decreasing = T), ]
+> 
+> # png(filename = "./Figs/CerebralFrequency.png", width = 2000, height = 2000, res = 300)
+> # CerebralFreq <- ggplot(data=sum_result, aes(x=rep_rows, y=reorder(Gene, rep_rows))) +
+> #   geom_col(width=0.5) +
+> #   scale_x_continuous(limits = c(0,12), breaks = 0:10) +
+> #   labs(y = "Gene", x = "Frequency", title = " Frequency of genes in the cerebral malaria signature")
+> # CerebralFreq
+> # dev.off()
+> 
+> #save(CerebralFreq, file = "./Objs/CerebralFreqPlot.png")
+> 
+> #####################################
+> ## Use the selected features to build a new random forest model
+> 
+> usedTrainMat_Filt <- usedTrainMat[Sel, ]
+> 
+> usedTestMat_Filt <- usedTestMat[Sel, ]
+> 
+> # Transpose the matrices
+> PredictorData_Filt <- t(usedTrainMat_Filt)
+> TestingData_Filt <- t(usedTestMat_Filt)
+> 
+> ### Sampsize
+> tmp <- as.vector(table(usedTrainGroup))
+> num_classes <- length(tmp)
+> min_size <- tmp[order(tmp,decreasing=FALSE)[1]]
+> sampsizes <- rep(min_size,num_classes)
+> 
+> ###########################
+> ################
+> ## Build the random forest model
+> set.seed(333)
+> RF_Cerebral <- tuneRF(x = PredictorData_Filt, y = usedTrainGroup, mtryStart = 1, ntreeTry=500, stepFactor = 1, improve=0.05, trace=F, plot=F, doBest=T, sampsize = sampsizes)
+> RF_Cerebral
+
+Call:
+ randomForest(x = x, y = y, mtry = res[which.min(res[, 2]), 1],      sampsize = ..1) 
+               Type of random forest: classification
+                     Number of trees: 500
+No. of variables tried at each split: 1
+
+        OOB estimate of  error rate: 13.51%
+Confusion matrix:
+            nonCerebral cerebral class.error
+nonCerebral         134       12  0.08219178
+cerebral             18       58  0.23684211
+> 
+> # save the model
+> #save(RF_Cerebral, file = "./Objs/RF_Cerebral.rda")
+> 
+> load("./Objs/RF_Cerebral.rda")
+> 
+> ################
+> # Predict in the training data
+> PredVotes_Train <- predict(RF_Cerebral, newdata = PredictorData_Filt, type = "vote")
+> PredResponse_Train <- predict(RF_Cerebral, PredictorData_Filt, type="response")
+> 
+> ROCTrain <- roc(usedTrainGroup, PredVotes_Train[,2], plot = F, print.auc = TRUE, levels = c("nonCerebral", "cerebral"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+Warning message:
+In ci.auc.roc(roc, ...) :
+  ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.
+> ROCTrain
+
+Call:
+roc.default(response = usedTrainGroup, predictor = PredVotes_Train[,     2], levels = c("nonCerebral", "cerebral"), direction = "<",     auc = TRUE, ci = TRUE, plot = F, print.auc = TRUE, col = "blue",     lwd = 2, grid = TRUE)
+
+Data: PredVotes_Train[, 2] in 146 controls (usedTrainGroup nonCerebral) < 76 cases (usedTrainGroup cerebral).
+Area under the curve: 1
+95% CI: 1-1 (DeLong)
+> 
+> confusion_test <- confusionMatrix(PredResponse_Train, usedTrainGroup, positive = "cerebral")
+> confusion_test
+Confusion Matrix and Statistics
+
+             Reference
+Prediction    nonCerebral cerebral
+  nonCerebral         146        0
+  cerebral              0       76
+                                     
+               Accuracy : 1          
+                 95% CI : (0.9835, 1)
+    No Information Rate : 0.6577     
+    P-Value [Acc > NIR] : < 2.2e-16  
+                                     
+                  Kappa : 1          
+                                     
+ Mcnemar's Test P-Value : NA         
+                                     
+            Sensitivity : 1.0000     
+            Specificity : 1.0000     
+         Pos Pred Value : 1.0000     
+         Neg Pred Value : 1.0000     
+             Prevalence : 0.3423     
+         Detection Rate : 0.3423     
+   Detection Prevalence : 0.3423     
+      Balanced Accuracy : 1.0000     
+                                     
+       'Positive' Class : cerebral   
+                                     
+> 
+> # Calculate Matthews correlation coefficient
+> MCC_Train <- mcc(preds = PredResponse_Train, actuals = usedTrainGroup)
+> MCC_Train
+[1] 1
+> 
+> #################
+> ## Predict in the testing data
+> PredVotes_Test <- predict(RF_Cerebral, newdata = TestingData_Filt, type = "vote")
+> PredResponse_Test <- predict(RF_Cerebral, TestingData_Filt, type="response")
+> 
+> ROCTest <- roc(usedTestGroup, PredVotes_Test[,2], plot = F, print.auc = TRUE, levels = c("nonCerebral", "cerebral"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+> ROCTest
+
+Call:
+roc.default(response = usedTestGroup, predictor = PredVotes_Test[,     2], levels = c("nonCerebral", "cerebral"), direction = "<",     auc = TRUE, ci = TRUE, plot = F, print.auc = TRUE, col = "blue",     lwd = 2, grid = TRUE)
+
+Data: PredVotes_Test[, 2] in 42 controls (usedTestGroup nonCerebral) < 54 cases (usedTestGroup cerebral).
+Area under the curve: 0.9769
+95% CI: 0.9528-1 (DeLong)
+> 
+> ### Resubstitution performance in the Test set
+> ConfusionTest <- confusionMatrix(PredResponse_Test, usedTestGroup, positive = "cerebral", mode = "everything")
+> ConfusionTest
+Confusion Matrix and Statistics
+
+             Reference
+Prediction    nonCerebral cerebral
+  nonCerebral          39        6
+  cerebral              3       48
+                                          
+               Accuracy : 0.9062          
+                 95% CI : (0.8295, 0.9562)
+    No Information Rate : 0.5625          
+    P-Value [Acc > NIR] : 1.593e-13       
+                                          
+                  Kappa : 0.811           
+                                          
+ Mcnemar's Test P-Value : 0.505           
+                                          
+            Sensitivity : 0.8889          
+            Specificity : 0.9286          
+         Pos Pred Value : 0.9412          
+         Neg Pred Value : 0.8667          
+              Precision : 0.9412          
+                 Recall : 0.8889          
+                     F1 : 0.9143          
+             Prevalence : 0.5625          
+         Detection Rate : 0.5000          
+   Detection Prevalence : 0.5312          
+      Balanced Accuracy : 0.9087          
+                                          
+       'Positive' Class : cerebral        
+                                          
+> 
+> MCC_Test <- mltools::mcc(pred = PredResponse_Test, actuals = usedTestGroup)
+> MCC_Test
+[1] 0.8126375
+> 
+> # For ROC and PRC curves
+> sscurves_Test_Cerebral <- evalmod(scores = PredVotes_Test[,2], labels = usedTestGroup)
+> sscurves_Test_Cerebral
+
+    === AUCs ===
+
+     Model name Dataset ID Curve type       AUC
+   1         m1          1        ROC 0.9768519
+   2         m1          1        PRC 0.9807707
+
+
+    === Input data ===
+
+     Model name Dataset ID # of negatives # of positives
+   1         m1          1             42             54
+
+> ROC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.98"), size = 3)
+> PRC_Test_Cerebral <- autoplot(sscurves_Test_Cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.98"), size = 3)
+> 
+> ########################################################################
+> ##############################################
+> ## Make a combined figure for the paper
+> load("./Objs/SevereSigROC_PRC.rda")
+> 
+> ROC_Test_Comp$theme$plot.title$size <- 8
+> PRC_Test_Comp$theme$plot.title$size <- 8
+> ROC_Test_Cerebral$theme$plot.title$size <- 8
+> PRC_Test_Cerebral$theme$plot.title$size <- 8
+> 
+> 
+> tiff(filename = "./Figs/TwoSignaturesPerformance.tiff", width = 2500, height = 2000, res = 350)
+> ((ROC_Test_Comp / PRC_Test_Comp + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12))) | 
++     (ROC_Test_Cerebral / PRC_Test_Cerebral + plot_layout(tag_level = "new") & theme(plot.tag = element_text(size = 12)))  
++ ) +
++   #plot_layout(widths = c(0.4, 1)) + 
++   plot_annotation(
++     title = 'The performance of the two malaria signatures in the testing data',
++     tag_levels = c('A', '1'),
++     theme = theme(plot.title = element_text(size = 12, face = "bold"))
++   )
+> dev.off()
+null device 
+          1 
+> 
+> ###################
+> 
+> sessionInfo()
+R version 4.0.3 (2020-10-10)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices datasets  utils     methods   base     
+
+other attached packages:
+ [1] caret_6.0-88                 ggplot2_3.3.5               
+ [3] lattice_0.20-44              mltools_0.3.5               
+ [5] patchwork_1.1.1              pROC_1.18.0                 
+ [7] inTrees_1.2                  randomForestExplainer_0.10.1
+ [9] pheatmap_1.0.12              precrec_0.12.7              
+[11] boot_1.3-28                  randomForest_4.6-14         
+[13] limma_3.46.0                 RRF_1.9.1                   
+
+loaded via a namespace (and not attached):
+ [1] jsonlite_1.7.2       splines_4.0.3        foreach_1.5.1       
+ [4] prodlim_2019.11.13   assertthat_0.2.1     stats4_4.0.3        
+ [7] arules_1.6-8         renv_0.14.0          ggrepel_0.9.1       
+[10] globals_0.14.0       ipred_0.9-11         pillar_1.6.2        
+[13] glue_1.4.2           digest_0.6.27        RColorBrewer_1.1-2  
+[16] colorspace_2.0-2     recipes_0.1.16       gbm_2.1.8           
+[19] htmltools_0.5.2      Matrix_1.3-4         plyr_1.8.6          
+[22] timeDate_3043.102    pkgconfig_2.0.3      listenv_0.8.0       
+[25] purrr_0.3.4          xtable_1.8-4         scales_1.1.1        
+[28] gower_0.2.2          lava_1.6.10          proxy_0.4-26        
+[31] tibble_3.1.4         farver_2.1.0         generics_0.1.0      
+[34] xgboost_1.4.1.1      ellipsis_0.3.2       DT_0.19             
+[37] withr_2.4.2          nnet_7.3-16          survival_3.2-13     
+[40] magrittr_2.0.1       crayon_1.4.1         GGally_2.1.2        
+[43] fansi_0.5.0          future_1.22.1        parallelly_1.28.1   
+[46] nlme_3.1-152         MASS_7.3-54          class_7.3-19        
+[49] tools_4.0.3          data.table_1.14.0    lifecycle_1.0.0     
+[52] stringr_1.4.0        munsell_0.5.0        e1071_1.7-8         
+[55] compiler_4.0.3       rlang_0.4.11         grid_4.0.3          
+[58] iterators_1.0.13     htmlwidgets_1.5.3    labeling_0.4.2      
+[61] ModelMetrics_1.2.2.2 gtable_0.3.0         codetools_0.2-18    
+[64] DBI_1.1.1            reshape_0.8.8        reshape2_1.4.4      
+[67] R6_2.5.1             lubridate_1.7.10     dplyr_1.0.7         
+[70] fastmap_1.1.0        future.apply_1.8.1   utf8_1.2.2          
+[73] stringi_1.7.4        parallel_4.0.3       Rcpp_1.0.7          
+[76] vctrs_0.3.8          rpart_4.1-15         tidyselect_1.1.1    
+> 
+> proc.time()
+   user  system elapsed 
+  4.982   0.677   6.665 

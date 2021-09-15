@@ -1,0 +1,293 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin17.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+* Project '~/' loaded. [renv 0.13.2]
+> ##################################
+> ## Test both the severe and cerebral malaria signatures on tuberculosis
+> 
+> rm(list = ls())
+> 
+> setwd("~/Documents/Research/Projects/Malaria")
+> 
+> renv::activate("~/Documents/Research/Projects/Malaria")
+* Project '~/Documents/Research/Projects/Malaria' loaded. [renv 0.14.0]
+Warning message:
+renv 0.14.0 was loaded from project library, but this project is configured to use renv 0.12.2.
+Use `renv::record("renv@0.14.0")` to record renv 0.14.0 in the lockfile.
+Use `renv::restore(packages = "renv")` to install renv 0.12.2 into the project library. 
+> 
+> library(GEOquery)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Setting options('download.file.method.GEOquery'='auto')
+Setting options('GEOquery.inmemory.gpl'=FALSE)
+> library(randomForest)
+randomForest 4.6-14
+Type rfNews() to see new features/changes/bug fixes.
+
+Attaching package: ‘randomForest’
+
+The following object is masked from ‘package:Biobase’:
+
+    combine
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    combine
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    var
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(precrec)
+
+Attaching package: ‘precrec’
+
+The following object is masked from ‘package:pROC’:
+
+    auc
+
+> library(ggplot2)
+
+Attaching package: ‘ggplot2’
+
+The following object is masked from ‘package:randomForest’:
+
+    margin
+
+> 
+> # TB2 <- getGEO("GSE73408", GSEMatrix = T, AnnotGPL = T)
+> # TB2 <- TB2$GSE73408_series_matrix.txt.gz
+> # 
+> # save(TB2, file = "./Data/TB2.rda")
+> 
+> load("./Data/TB2.rda")
+> 
+> Expr_TB2 <- exprs(TB2)
+> Pheno_TB2 <- pData(TB2)
+> FeatData_TB2 <- fData(TB2)
+> 
+> ############################
+> ## Annotation
+> 
+> ## Expr_TB2
+> head(rownames(Expr_TB2))
+[1] "7896740" "7896742" "7896744" "7896750" "7896754" "7896756"
+> rownames(Expr_TB2) <- FeatData_TB2$`Gene symbol`
+> summary(is.na(rownames(Expr_TB2)))
+   Mode   FALSE 
+logical   21734 
+> #rownames(Expr_TB2) <- gsub("-","", rownames(Expr_TB2))
+> #rownames(Expr_TB2) <- gsub("_","",rownames(Expr_TB2))
+> sel <- which(apply(Expr_TB2, 1, function(x) all(is.finite(x)) ))
+> Expr_TB2 <- Expr_TB2[sel, ]
+> Expr_TB2 <- Expr_TB2[!is.na(rownames(Expr_TB2)),]
+> dim(Expr_TB2)
+[1] 21734   109
+> 
+> range(Expr_TB2)
+[1]  0.7226149 13.2372179
+> Expr_TB2 <- t(scale(t(Expr_TB2), center = TRUE, scale = TRUE))
+> 
+> 
+> ####################################
+> 
+> ### Modify the phenotype
+> 
+> # primary TB and pneumonia vs latent TB
+> 
+> # Pheno1
+> 
+> Pheno_TB2$DiseaseStatus <- as.factor(Pheno_TB2$`clinical group:ch1`)
+> levels(Pheno_TB2$DiseaseStatus) <- c("control", "case", "case")
+> #Pheno_TB2$DiseaseStatus <- factor(Pheno_TB2$DiseaseStatus, levels = c("control", "case"))
+> table(Pheno_TB2$DiseaseStatus)
+
+control    case 
+     35      74 
+> all(rownames(Pheno_TB2) == colnames(Expr_TB2))
+[1] TRUE
+> 
+> ClassTBandPNAVsLatentTB<- Pheno_TB2$DiseaseStatus
+> 
+> ####################################
+> ## Load the severe malaria signature
+> load("./Objs/RF_Comp.rda")
+> 
+> #################
+> ## Predict
+> 
+> TestingData_TB2 <- t(Expr_TB2)
+> 
+> PredVotes_TB2 <- predict(RF_Comp, newdata = TestingData_TB2, type = "vote")
+> PredResponse_TB2 <- predict(RF_Comp, TestingData_TB2, type="response")
+> 
+> ROCTest <- roc(ClassTBandPNAVsLatentTB, PredVotes_TB2[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+> ROCTest
+
+Call:
+roc.default(response = ClassTBandPNAVsLatentTB, predictor = PredVotes_TB2[,     2], levels = c("control", "case"), direction = "<", auc = TRUE,     ci = TRUE, plot = F, print.auc = TRUE, col = "blue", lwd = 2,     grid = TRUE)
+
+Data: PredVotes_TB2[, 2] in 35 controls (ClassTBandPNAVsLatentTB control) < 74 cases (ClassTBandPNAVsLatentTB case).
+Area under the curve: 0.5486
+95% CI: 0.4321-0.6652 (DeLong)
+> 
+> # For ROC and PRC curves
+> sscurves_TB2 <- evalmod(scores = PredVotes_TB2[,2], labels = ClassTBandPNAVsLatentTB)
+> sscurves_TB2
+
+    === AUCs ===
+
+     Model name Dataset ID Curve type       AUC
+   1         m1          1        ROC 0.5486486
+   2         m1          1        PRC 0.7308429
+
+
+    === Input data ===
+
+     Model name Dataset ID # of negatives # of positives
+   1         m1          1             35             74
+
+> ROC_TB2 <- autoplot(sscurves_TB2, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE73408 (primary TB and pneumonia vs latent TB)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.55"), size = 4)
+> PRC_TB2 <- autoplot(sscurves_TB2, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE73408 (primary TB and pneumonia vs latent TB)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.73"), size = 4)
+> 
+> save(ROC_TB2, PRC_TB2, file = "./Objs/TB2_Curves.rda")
+> 
+> ########################################################################################
+> ####################################
+> ## Load the cerebral malaria signature
+> load("./Objs/RF_Cerebral.rda")
+> 
+> #################
+> ## Predict
+> CommonGns <- intersect(rownames(Expr_TB2), rownames(RF_Cerebral$importance))
+> RF_Cerebral$importance <- RF_Cerebral$importance[CommonGns, ]
+> RF_Cerebral$importanceSD <- RF_Cerebral$importanceSD[CommonGns, ]
+> RF_Cerebral$forest$ncat <- RF_Cerebral$forest$ncat[CommonGns]
+> 
+> ######
+> PredVotes_TB2_cerebral <- predict(RF_Cerebral, newdata = TestingData_TB2, type = "vote")
+> PredResponse_TB2_cerebral <- predict(RF_Cerebral, TestingData_TB2, type="response")
+> 
+> ROCTest_cerebral <- roc(ClassTBandPNAVsLatentTB, PredVotes_TB2_cerebral[,2], plot = F, print.auc = TRUE, levels = c("control", "case"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+> ROCTest_cerebral
+
+Call:
+roc.default(response = ClassTBandPNAVsLatentTB, predictor = PredVotes_TB2_cerebral[,     2], levels = c("control", "case"), direction = "<", auc = TRUE,     ci = TRUE, plot = F, print.auc = TRUE, col = "blue", lwd = 2,     grid = TRUE)
+
+Data: PredVotes_TB2_cerebral[, 2] in 35 controls (ClassTBandPNAVsLatentTB control) < 74 cases (ClassTBandPNAVsLatentTB case).
+Area under the curve: 0.6481
+95% CI: 0.5437-0.7524 (DeLong)
+> 
+> # For ROC and PRC curves
+> sscurves_TB2_cerebral <- evalmod(scores = PredVotes_TB2_cerebral[,2], labels = ClassTBandPNAVsLatentTB)
+> sscurves_TB2_cerebral
+
+    === AUCs ===
+
+     Model name Dataset ID Curve type       AUC
+   1         m1          1        ROC 0.6480695
+   2         m1          1        PRC 0.8251034
+
+
+    === Input data ===
+
+     Model name Dataset ID # of negatives # of positives
+   1         m1          1             35             74
+
+> ROC_TB2_cerebral <- autoplot(sscurves_TB2_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE73408 (primary TB and pneumonia vs latent TB)") + annotate("text", x = .65, y = .25, label = paste("AUC = ", round(ROCTest_cerebral$auc, 2)), size = 4)
+> PRC_TB2_cerebral <- autoplot(sscurves_TB2_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE73408 (primary TB and pneumonia vs latent TB)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.83"), size = 4)
+> 
+> save(ROC_TB2_cerebral, PRC_TB2_cerebral, file = "./Objs/TB2_Curves_cerebral.rda")
+> 
+> ################
+> sessionInfo()
+R version 4.0.3 (2020-10-10)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices datasets  utils     methods  
+[8] base     
+
+other attached packages:
+[1] ggplot2_3.3.5       precrec_0.12.7      pROC_1.18.0        
+[4] randomForest_4.6-14 GEOquery_2.58.0     Biobase_2.50.0     
+[7] BiocGenerics_0.36.0
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.7        pillar_1.6.2      compiler_4.0.3    plyr_1.8.6       
+ [5] tools_4.0.3       lifecycle_1.0.0   tibble_3.1.4      gtable_0.3.0     
+ [9] pkgconfig_2.0.3   rlang_0.4.11      DBI_1.1.1         withr_2.4.2      
+[13] dplyr_1.0.7       xml2_1.3.2        generics_0.1.0    vctrs_0.3.8      
+[17] hms_1.1.0         grid_4.0.3        tidyselect_1.1.1  glue_1.4.2       
+[21] data.table_1.14.0 R6_2.5.1          fansi_0.5.0       limma_3.46.0     
+[25] tzdb_0.1.2        readr_2.0.1       purrr_0.3.4       tidyr_1.1.3      
+[29] magrittr_2.0.1    scales_1.1.1      ellipsis_0.3.2    assertthat_0.2.1 
+[33] colorspace_2.0-2  renv_0.14.0       utf8_1.2.2        munsell_0.5.0    
+[37] crayon_1.4.1     
+> 
+> proc.time()
+   user  system elapsed 
+  3.206   0.458   4.200 

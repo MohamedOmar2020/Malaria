@@ -1,0 +1,189 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin17.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+* Project '~/' loaded. [renv 0.13.2]
+> 
+> 
+> rm(list = ls())
+> 
+> setwd("~/Documents/Research/Projects/Malaria")
+> 
+> renv::activate("~/Documents/Research/Projects/Malaria")
+* Project '~/Documents/Research/Projects/Malaria' loaded. [renv 0.14.0]
+Warning message:
+renv 0.14.0 was loaded from project library, but this project is configured to use renv 0.12.2.
+Use `renv::record("renv@0.14.0")` to record renv 0.14.0 in the lockfile.
+Use `renv::restore(packages = "renv")` to install renv 0.12.2 into the project library. 
+> 
+> library(GEOquery)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Setting options('download.file.method.GEOquery'='auto')
+Setting options('GEOquery.inmemory.gpl'=FALSE)
+> 
+> #GSE7586 <- getGEO("GSE7586", GSEMatrix = T, AnnotGPL = T)
+> #GSE7586 <- GSE7586$GSE7586_series_matrix.txt.gz
+> 
+> #save(GSE7586, file = "./Data/PlacentalMalariaDataset.rda")
+> 
+> load("./Data/PlacentalMalariaDataset.rda")
+> 
+> Expr_Test2 <- exprs(GSE7586)
+> Pheno_Test2 <- pData(GSE7586)
+> FeatData_Test2 <- fData(GSE7586)
+> 
+> 
+> ############################
+> ## Annotation
+> 
+> ## Expr_Cerebral
+> head(rownames(Expr_Test2))
+[1] "1007_s_at" "1053_at"   "117_at"    "121_at"    "1255_g_at" "1294_at"  
+> rownames(Expr_Test2) <- FeatData_Test2$`Gene symbol`
+> summary(is.na(rownames(Expr_Test2)))
+   Mode   FALSE 
+logical   54675 
+> #rownames(Expr_Cerebral) <- gsub("-","", rownames(Expr_Cerebral))
+> #rownames(Expr_Cerebral) <- gsub("_","",rownames(Expr_Cerebral))
+> sel <- which(apply(Expr_Test2, 1, function(x) all(is.finite(x)) ))
+> Expr_Test2 <- Expr_Test2[sel, ]
+> Expr_Test2 <- Expr_Test2[!is.na(rownames(Expr_Test2)),]
+> dim(Expr_Test2)
+[1] 54674    20
+> 
+> range(Expr_Test2)
+[1]  2.025 14.596
+> #plot(density(Expr_Cerebral))
+> #boxplot(Expr_Cerebral)
+> # X1 <- Expr_Cerebral
+> # ffun <- filterfun(pOverA(p = 0.5, A = 100))
+> # filt1 <- genefilter(2^X1,ffun)
+> # Expr_Cerebral <- Expr_Cerebral[filt1,]
+> # 
+> Expr_Test2 <- t(scale(t(Expr_Test2), center = TRUE, scale = TRUE))
+> 
+> 
+> ####################################
+> 
+> ### Modify the phenotype
+> # Placental malaria +ve vs PM-ve
+> 
+> Pheno_Test2$`PM Status:ch1`[is.na(Pheno_Test2$`PM Status:ch1`)] <- "uninfected"
+> Pheno_Test2$DiseaseStatus <- as.factor(Pheno_Test2$`PM Status:ch1`)
+> levels(Pheno_Test2$DiseaseStatus) <- c("Complicated", "unComplicated") 
+> table(Pheno_Test2$DiseaseStatus)
+
+  Complicated unComplicated 
+           10            10 
+> Pheno_Test2$DiseaseStatus <- factor(Pheno_Test2$DiseaseStatus, levels = c("unComplicated", "Complicated"))
+> 
+> #expr1 <- expr1[, colnames(expr1) %in% rownames(Pheno_Cerebral)]
+> #all(rownames(Pheno_Cerebral) == colnames(expr1))
+> 
+> 
+> ClassComplicatedVSunComplicated <- Pheno_Test2$DiseaseStatus
+> 
+> 
+> ###################################
+> ####################################
+> 
+> ### Modify the phenotype
+> # Placental malaria +ve vs PM-ve
+> 
+> Pheno_Test2$`PM Status:ch1`[is.na(Pheno_Test2$`PM Status:ch1`)] <- "uninfected"
+> Pheno_Test2$InflammationStatus <- as.factor(Pheno_Test2$`Inflammation:ch1`)
+> levels(Pheno_Test2$InflammationStatus) <- c("No", "Yes") 
+> table(Pheno_Test2$InflammationStatus)
+
+ No Yes 
+ 12   8 
+> #Pheno_Test2$InflammationStatus <- factor(Pheno_Test2$DiseaseStatus, levels = c("unComplicated", "Complicated"))
+> 
+> #expr1 <- expr1[, colnames(expr1) %in% rownames(Pheno_Cerebral)]
+> #all(rownames(Pheno_Cerebral) == colnames(expr1))
+> 
+> 
+> ClassInflammation <- Pheno_Test2$InflammationStatus
+> 
+> save(Expr_Test2, ClassComplicatedVSunComplicated, ClassInflammation, file = "./Objs/PlacentalMalaria2.rda")
+> 
+> 
+> sessionInfo()
+R version 4.0.3 (2020-10-10)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices datasets  utils     methods  
+[8] base     
+
+other attached packages:
+[1] GEOquery_2.58.0     Biobase_2.50.0      BiocGenerics_0.36.0
+
+loaded via a namespace (and not attached):
+ [1] xml2_1.3.2       magrittr_2.0.1   hms_1.1.0        tidyselect_1.1.1
+ [5] R6_2.5.1         rlang_0.4.11     fansi_0.5.0      dplyr_1.0.7     
+ [9] tools_4.0.3      utf8_1.2.2       DBI_1.1.1        ellipsis_0.3.2  
+[13] assertthat_0.2.1 tibble_3.1.4     lifecycle_1.0.0  crayon_1.4.1    
+[17] tidyr_1.1.3      purrr_0.3.4      readr_2.0.1      tzdb_0.1.2      
+[21] vctrs_0.3.8      glue_1.4.2       limma_3.46.0     compiler_4.0.3  
+[25] pillar_1.6.2     generics_0.1.0   renv_0.14.0      pkgconfig_2.0.3 
+> 
+> 
+> 
+> 
+> proc.time()
+   user  system elapsed 
+  2.990   0.442   4.292 

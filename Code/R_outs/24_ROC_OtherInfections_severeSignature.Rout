@@ -1,0 +1,208 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin17.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+* Project '~/' loaded. [renv 0.13.2]
+> 
+> 
+> rm(list = ls())
+> 
+> setwd("~/Documents/Research/Projects/Malaria")
+> 
+> renv::activate("~/Documents/Research/Projects/Malaria")
+* Project '~/Documents/Research/Projects/Malaria' loaded. [renv 0.14.0]
+Warning message:
+renv 0.14.0 was loaded from project library, but this project is configured to use renv 0.12.2.
+Use `renv::record("renv@0.14.0")` to record renv 0.14.0 in the lockfile.
+Use `renv::restore(packages = "renv")` to install renv 0.12.2 into the project library. 
+> 
+> 
+> library(ggplot2)
+> library(patchwork)
+> 
+> ######################
+> ## Load the curves of the severe malaria signature performance in other infections 
+> 
+> # DF
+> load("./Objs/Dengue1_Curves.rda")
+> load("./Objs/Dengue2_Curves.rda")
+> load("./Objs/Dengue3_Curves.rda")
+> load("./Objs/Dengue4_Curves.rda")
+> load("./Objs/Dengue5_Curves.rda")
+> load("./Objs/Dengue6_Curves.rda")
+> 
+> ## Many infections
+> load("./Objs/Adenovirus1_Curves.rda")
+> load("./Objs/ManyInfections1_Curves.rda")
+> load("./Objs/ManyInfections2_Curves.rda")
+> load("./Objs/ManyInfections3_Curves.rda")
+> 
+> ## TB
+> load("./Objs/TB1_Curves.rda")
+> load("./Objs/TB2_Curves.rda")
+> load("./Objs/TB3_Curves.rda")
+> load("./Objs/TB4_Curves.rda")
+> 
+> # TB and HIV
+> load("./Objs/HIVandTB_Curves.rda")
+> 
+> # West Nile virus
+> load("./Objs/WestNile1_Curves.rda")
+> 
+> # Meningitis
+> load("./Objs/Meningitis_Curves_severe.rda")
+> 
+> #############################################
+> ROC_Dengue$labels$title <- "GSE51808 (DF vs healthy)"
+> ROC_Dengue$theme$plot.title$size <- 6
+> 
+> ROC_Dengue2$labels$title <- "GSE96656 (DF vs healthy)"
+> ROC_Dengue2$theme$plot.title$size <- 6
+> 
+> ROC_Dengue3$labels$title <- "GSE25001 (un-complicated vs complicated DF)"  
+> ROC_Dengue3$theme$plot.title$size <- 5
+> 
+> ROC_Dengue4$labels$title <- "GSE18090 (DF vs healthy)"
+> ROC_Dengue4$theme$plot.title$size <- 6
+> 
+> ROC_Dengue5$labels$title <- "GSE17924 (un-complicated vs complicated DF)"
+> ROC_Dengue5$theme$plot.title$size <- 5
+> 
+> ROC_Dengue6$labels$title <- "GSE13052 (un-complicated vs complicated DF)"
+> ROC_Dengue6$theme$plot.title$size <- 5
+> 
+> 
+> ROC_Adenovirus$labels$title <- "GSE40396 (Bacterial and viral infections vs healthy)"
+> ROC_Adenovirus$theme$plot.title$size <- 6
+> ROC_ManyInfections1$labels$title <- "GSE42026 (Bacterial and viral infections vs healthy)"
+> ROC_ManyInfections1$theme$plot.title$size <- 6
+> ROC_ManyInfections2$labels$title <- "GSE6269-GPL96 (Bacterial and viral infections vs healthy)"
+> ROC_ManyInfections2$theme$plot.title$size <- 6
+> ROC_ManyInfections3$labels$title <- "GSE63990 (Bacterial and viral infections vs healthy)"
+> ROC_ManyInfections3$theme$plot.title$size <- 6
+> 
+> ROC_TB1$labels$title <- "GSE19444"
+> ROC_TB2$labels$title <- "GSE73408"
+> ROC_TB3$labels$title <- "GSE62525"
+> ROC_TB4$labels$title <- "GSE83456"
+> 
+> ROC_HIVandTB$labels$title <- "GSE39940 (HIV/TB vs healthy)"
+> ROC_HIVandTB$theme$plot.title$size <- 6
+> ROC_WestNile$labels$title <- "GSE46681 (Asymptomatic vs severe West Nile viral infection)"
+> ROC_WestNile$theme$plot.title$size <- 6
+> 
+> 
+> ROC_Meningitis2_severe$labels$title <- "GSE80496"
+> ROC_Meningitis4_severe$labels$title <- "GSE40586"
+> ROC_Meningitis2_severe$theme$plot.title$size <- 9
+> ROC_Meningitis4_severe$theme$plot.title$size <- 9
+> 
+> ##############################################
+> ## Dengue Fever
+> tiff(filename = "./Figs/CompMalariaSigPerformance_Dengue.tiff", width = 2500, height = 2000, res = 350)
+> ((ROC_Dengue / ROC_Dengue2 & theme(plot.tag = element_text(size = 8))) | (ROC_Dengue4 / ROC_Dengue3 & theme(plot.tag = element_text(size = 8))) | (ROC_Dengue5 / ROC_Dengue6 & theme(plot.tag = element_text(size = 8))
++ )) +
++   #plot_layout(widths = c(0.4, 1)) + 
++   plot_annotation(
++     title = 'The performance of the severe malaria signature in dengue fever datasets',
++     tag_levels = c('A', '1'),
++     theme = theme(plot.title = element_text(size = 12, face = "bold"))
++   )
+> dev.off()
+null device 
+          1 
+> 
+> ##############################################
+> ## TB 
+> png(filename = "./Figs/CompMalariaSigPerformance_TB.png", width = 2500, height = 2000, res = 300)
+> (ROC_TB1 / ROC_TB2 | ROC_TB3 / ROC_TB4 & theme(plot.tag = element_text(size = 12))
++ ) +
++   #plot_layout(widths = c(0.4, 1)) + 
++   plot_annotation(
++     title = 'The performance of the severe malaria signature in TB datasets',
++     tag_levels = c('A', '1'),
++     theme = theme(plot.title = element_text(size = 15, face = "bold"))
++   )
+> dev.off()
+null device 
+          1 
+> 
+> 
+> ##############################################
+> ## Many infections
+> png(filename = "./Figs/CompMalariaSigPerformance_OtherInfections.png", width = 2500, height = 2000, res = 300)
+> (ROC_Adenovirus / ROC_ManyInfections1 | ROC_ManyInfections2 / ROC_ManyInfections3 | ROC_HIVandTB / ROC_WestNile & theme(plot.tag = element_text(size = 12))
++ ) +
++   #plot_layout(widths = c(0.4, 1)) + 
++   plot_annotation(
++     title = 'The performance of the severe malaria signature in other viral and bacterial infections datasets',
++     tag_levels = c('A', '1'),
++     theme = theme(plot.title = element_text(size = 12, face = "bold"))
++   )
+> dev.off()
+null device 
+          1 
+> 
+> ##############################################
+> ## Meningitis
+> tiff(filename = "./Figs/new/SevereMalariaSigPerformance_Meningitis.tiff", width = 2500, height = 2000, res = 300)
+> (ROC_Meningitis2_severe | ROC_Meningitis4_severe & theme(plot.tag = element_text(size = 12))
++ ) +
++   #plot_layout(widths = c(0.4, 1)) + 
++   plot_annotation(
++     title = 'The performance of the severe malaria signature in meningitis datasets',
++     tag_levels = c('A', '1'),
++     theme = theme(plot.title = element_text(size = 12, face = "bold"))
++   )
+> dev.off()
+null device 
+          1 
+> 
+> #################
+> sessionInfo()
+R version 4.0.3 (2020-10-10)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices datasets  utils     methods   base     
+
+other attached packages:
+[1] patchwork_1.1.1 ggplot2_3.3.5  
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.7        magrittr_2.0.1    tidyselect_1.1.1  munsell_0.5.0    
+ [5] colorspace_2.0-2  R6_2.5.1          rlang_0.4.11      fansi_0.5.0      
+ [9] dplyr_1.0.7       tools_4.0.3       grid_4.0.3        data.table_1.14.0
+[13] gtable_0.3.0      utf8_1.2.2        DBI_1.1.1         withr_2.4.2      
+[17] precrec_0.12.7    ellipsis_0.3.2    digest_0.6.27     assertthat_0.2.1 
+[21] tibble_3.1.4      lifecycle_1.0.0   crayon_1.4.1      farver_2.1.0     
+[25] purrr_0.3.4       vctrs_0.3.8       glue_1.4.2        labeling_0.4.2   
+[29] compiler_4.0.3    pillar_1.6.2      generics_0.1.0    scales_1.1.1     
+[33] renv_0.14.0       pkgconfig_2.0.3  
+> 
+> proc.time()
+   user  system elapsed 
+  3.595   0.752   5.251 

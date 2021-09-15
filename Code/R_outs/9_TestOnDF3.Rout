@@ -1,0 +1,304 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin17.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+* Project '~/' loaded. [renv 0.13.2]
+> ##################################
+> ## Test both the severe and cerebral malaria signatures on Dengue fever
+> 
+> rm(list = ls())
+> 
+> setwd("~/Documents/Research/Projects/Malaria")
+> 
+> renv::activate("~/Documents/Research/Projects/Malaria")
+* Project '~/Documents/Research/Projects/Malaria' loaded. [renv 0.14.0]
+Warning message:
+renv 0.14.0 was loaded from project library, but this project is configured to use renv 0.12.2.
+Use `renv::record("renv@0.14.0")` to record renv 0.14.0 in the lockfile.
+Use `renv::restore(packages = "renv")` to install renv 0.12.2 into the project library. 
+> 
+> library(GEOquery)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Setting options('download.file.method.GEOquery'='auto')
+Setting options('GEOquery.inmemory.gpl'=FALSE)
+> library(randomForest)
+randomForest 4.6-14
+Type rfNews() to see new features/changes/bug fixes.
+
+Attaching package: ‘randomForest’
+
+The following object is masked from ‘package:Biobase’:
+
+    combine
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    combine
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    var
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(precrec)
+
+Attaching package: ‘precrec’
+
+The following object is masked from ‘package:pROC’:
+
+    auc
+
+> library(ggplot2)
+
+Attaching package: ‘ggplot2’
+
+The following object is masked from ‘package:randomForest’:
+
+    margin
+
+> 
+> 
+> #DengueDataset3 <- getGEO("GSE25001", GSEMatrix = T, AnnotGPL = T)
+> #DengueDataset3 <- DengueDataset3$GSE25001_series_matrix.txt.gz
+> 
+> #save(DengueDataset3, file = "./Data/DengueDataset3.rda")
+> 
+> load("./Data/DengueDataset3.rda")
+> 
+> Expr_Dengue3 <- exprs(DengueDataset3)
+> Pheno_Dengue3 <- pData(DengueDataset3)
+> FeatData_Dengue3 <- fData(DengueDataset3)
+> 
+> 
+> ############################
+> ## Annotation
+> 
+> ## Expr_Dengue3
+> head(rownames(Expr_Dengue3))
+[1] "ILMN_1343291" "ILMN_1343292" "ILMN_1343293" "ILMN_1343294" "ILMN_1651209"
+[6] "ILMN_1651217"
+> rownames(Expr_Dengue3) <- FeatData_Dengue3$`Gene symbol`
+> summary(is.na(rownames(Expr_Dengue3)))
+   Mode   FALSE 
+logical   22184 
+> #rownames(Expr_Dengue3) <- gsub("-","", rownames(Expr_Dengue3))
+> #rownames(Expr_Dengue3) <- gsub("_","",rownames(Expr_Dengue3))
+> sel <- which(apply(Expr_Dengue3, 1, function(x) all(is.finite(x)) ))
+> Expr_Dengue3 <- Expr_Dengue3[sel, ]
+> Expr_Dengue3 <- Expr_Dengue3[!is.na(rownames(Expr_Dengue3)),]
+> dim(Expr_Dengue3)
+[1] 22184   209
+> 
+> range(Expr_Dengue3)
+[1]   -64.07754 70325.33000
+> Expr_Dengue3 <- log2(Expr_Dengue3 + 65)
+> #plot(density(Expr_Dengue3))
+> #boxplot(Expr_Dengue3)
+> # X1 <- Expr_Dengue3
+> # ffun <- filterfun(pOverA(p = 0.5, A = 100))
+> # filt1 <- genefilter(2^X1,ffun)
+> # Expr_Dengue3 <- Expr_Dengue3[filt1,]
+> # 
+> Expr_Dengue3 <- t(scale(t(Expr_Dengue3), center = TRUE, scale = TRUE))
+> 
+> 
+> ####################################
+> 
+> 
+> ########################################################################################
+> #########################################################################################
+> ###### DSS vs DF
+> 
+> ### Modify the phenotype
+> 
+> # Pheno1
+> Pheno_Dengue3$DiseaseStatus2 <- as.factor(Pheno_Dengue3$`disease state:ch1`)
+> levels(Pheno_Dengue3$DiseaseStatus2) <- c("DSS", "DF") 
+> table(Pheno_Dengue3$DiseaseStatus2)
+
+DSS  DF 
+ 74 135 
+> Pheno_Dengue3$DiseaseStatus2 <- factor(Pheno_Dengue3$DiseaseStatus2, levels = c("DF", "DSS"))
+> #Expr_Dengue3 <- Expr_Dengue3[, colnames(Expr_Dengue3) %in% rownames(Pheno_Dengue3)]
+> all(rownames(Pheno_Dengue3) == colnames(Expr_Dengue3))
+[1] TRUE
+> 
+> ClassDSSvsDF <- Pheno_Dengue3$DiseaseStatus2
+> 
+> ####################################
+> ## Load the severe malaria signature
+> load("./Objs/RF_Comp.rda")
+> 
+> #################
+> ## Predict in the Dengue dataset (DHF vs DF)
+> 
+> TestingData_Dengue <- t(Expr_Dengue3)
+> 
+> PredVotes_Dengue <- predict(RF_Comp, newdata = TestingData_Dengue, type = "vote")
+> PredResponse_Dengue <- predict(RF_Comp, TestingData_Dengue, type="response")
+> 
+> ROC_DF_severe <- roc(ClassDSSvsDF, PredVotes_Dengue[,2], plot = F, print.auc = TRUE, levels = c("DF", "DSS"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+> ROC_DF_severe
+
+Call:
+roc.default(response = ClassDSSvsDF, predictor = PredVotes_Dengue[,     2], levels = c("DF", "DSS"), direction = "<", auc = TRUE,     ci = TRUE, plot = F, print.auc = TRUE, col = "blue", lwd = 2,     grid = TRUE)
+
+Data: PredVotes_Dengue[, 2] in 135 controls (ClassDSSvsDF DF) < 74 cases (ClassDSSvsDF DSS).
+Area under the curve: 0.4799
+95% CI: 0.3998-0.56 (DeLong)
+> 
+> # For ROC and PRC curves
+> sscurves_Dengue3 <- evalmod(scores = PredVotes_Dengue[,2], labels = ClassDSSvsDF)
+> sscurves_Dengue3
+
+    === AUCs ===
+
+     Model name Dataset ID Curve type       AUC
+   1         m1          1        ROC 0.4798799
+   2         m1          1        PRC 0.3248030
+
+
+    === Input data ===
+
+     Model name Dataset ID # of negatives # of positives
+   1         m1          1            135             74
+
+> ROC_Dengue3 <- autoplot(sscurves_Dengue3, curvetype = c("ROC")) + labs(title = "ROC curve of the complicated malaria signature in GSE25001 (DF vs DSS)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.48"), size = 3)
+> PRC_Dengue3 <- autoplot(sscurves_Dengue3, curvetype = c("PRC")) + labs(title = "PRC curve of the complicated malaria signature in GSE25001 (DF vs DSS)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.32"), size = 3)
+> 
+> save(ROC_Dengue3, PRC_Dengue3, file = "./Objs/Dengue3_Curves.rda")
+> 
+> 
+> ####################################
+> ## Load the cerebral malaria signature
+> load("./Objs/RF_Cerebral.rda")
+> 
+> #################
+> ## Predict in the Dengue dataset (DSS vs DF)
+> 
+> PredVotes_Dengue_cerebral <- predict(RF_Cerebral, newdata = TestingData_Dengue, type = "vote")
+> PredResponse_Dengue_cerebral <- predict(RF_Cerebral, TestingData_Dengue, type="response")
+> 
+> ROCTest <- roc(ClassDSSvsDF, PredVotes_Dengue[,2], plot = F, print.auc = TRUE, levels = c("DF", "DSS"), direction = "<", col = "blue", lwd = 2, grid = TRUE, auc = TRUE, ci = TRUE)
+> ROCTest
+
+Call:
+roc.default(response = ClassDSSvsDF, predictor = PredVotes_Dengue[,     2], levels = c("DF", "DSS"), direction = "<", auc = TRUE,     ci = TRUE, plot = F, print.auc = TRUE, col = "blue", lwd = 2,     grid = TRUE)
+
+Data: PredVotes_Dengue[, 2] in 135 controls (ClassDSSvsDF DF) < 74 cases (ClassDSSvsDF DSS).
+Area under the curve: 0.4799
+95% CI: 0.3998-0.56 (DeLong)
+> 
+> # For ROC and PRC curves
+> sscurves_Dengue3_cerebral <- evalmod(scores = PredVotes_Dengue_cerebral[,2], labels = ClassDSSvsDF)
+> sscurves_Dengue3_cerebral
+
+    === AUCs ===
+
+     Model name Dataset ID Curve type       AUC
+   1         m1          1        ROC 0.5503504
+   2         m1          1        PRC 0.3626406
+
+
+    === Input data ===
+
+     Model name Dataset ID # of negatives # of positives
+   1         m1          1            135             74
+
+> ROC_Dengue3_cerebral <- autoplot(sscurves_Dengue3_cerebral, curvetype = c("ROC")) + labs(title = "ROC curve of the cerebral malaria signature in GSE25001 (DF vs DSS)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.55"), size = 3)
+> PRC_Dengue3_cerebral <- autoplot(sscurves_Dengue3_cerebral, curvetype = c("PRC")) + labs(title = "PRC curve of the cerebral malaria signature in GSE25001 (DF vs DSS)") + annotate("text", x = .65, y = .25, label = paste("AUPRC = 0.36"), size = 3)
+> 
+> save(ROC_Dengue3_cerebral, PRC_Dengue3_cerebral, file = "./Objs/Dengue3_Curves_cerebral.rda")
+> 
+> #######################
+> sessionInfo()
+R version 4.0.3 (2020-10-10)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices datasets  utils     methods  
+[8] base     
+
+other attached packages:
+[1] ggplot2_3.3.5       precrec_0.12.7      pROC_1.18.0        
+[4] randomForest_4.6-14 GEOquery_2.58.0     Biobase_2.50.0     
+[7] BiocGenerics_0.36.0
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.7        pillar_1.6.2      compiler_4.0.3    plyr_1.8.6       
+ [5] tools_4.0.3       lifecycle_1.0.0   tibble_3.1.4      gtable_0.3.0     
+ [9] pkgconfig_2.0.3   rlang_0.4.11      DBI_1.1.1         withr_2.4.2      
+[13] dplyr_1.0.7       xml2_1.3.2        generics_0.1.0    vctrs_0.3.8      
+[17] hms_1.1.0         grid_4.0.3        tidyselect_1.1.1  glue_1.4.2       
+[21] data.table_1.14.0 R6_2.5.1          fansi_0.5.0       limma_3.46.0     
+[25] tzdb_0.1.2        readr_2.0.1       purrr_0.3.4       tidyr_1.1.3      
+[29] magrittr_2.0.1    scales_1.1.1      ellipsis_0.3.2    assertthat_0.2.1 
+[33] colorspace_2.0-2  renv_0.14.0       utf8_1.2.2        munsell_0.5.0    
+[37] crayon_1.4.1     
+> 
+> 
+> 
+> proc.time()
+   user  system elapsed 
+  3.664   0.482   4.660 

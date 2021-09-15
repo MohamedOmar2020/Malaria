@@ -1,0 +1,409 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin17.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+* Project '~/' loaded. [renv 0.13.2]
+> ##################################
+> ## Test both the severe and cerebral malaria signatures on meningitis
+> 
+> rm(list = ls())
+> 
+> setwd("~/Documents/Research/Projects/Malaria")
+> 
+> renv::activate("~/Documents/Research/Projects/Malaria")
+* Project '~/Documents/Research/Projects/Malaria' loaded. [renv 0.14.0]
+Warning message:
+renv 0.14.0 was loaded from project library, but this project is configured to use renv 0.12.2.
+Use `renv::record("renv@0.14.0")` to record renv 0.14.0 in the lockfile.
+Use `renv::restore(packages = "renv")` to install renv 0.12.2 into the project library. 
+> 
+> library(GEOquery)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Setting options('download.file.method.GEOquery'='auto')
+Setting options('GEOquery.inmemory.gpl'=FALSE)
+> library(randomForest)
+randomForest 4.6-14
+Type rfNews() to see new features/changes/bug fixes.
+
+Attaching package: ‘randomForest’
+
+The following object is masked from ‘package:Biobase’:
+
+    combine
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    combine
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    var
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(precrec)
+
+Attaching package: ‘precrec’
+
+The following object is masked from ‘package:pROC’:
+
+    auc
+
+> library(ggplot2)
+
+Attaching package: ‘ggplot2’
+
+The following object is masked from ‘package:randomForest’:
+
+    margin
+
+> 
+> MeningitisDataset2 <- getGEO("GSE80496", GSEMatrix = T, AnnotGPL = T)
+Found 1 file(s)
+GSE80496_series_matrix.txt.gz
+trying URL 'https://ftp.ncbi.nlm.nih.gov/geo/series/GSE80nnn/GSE80496/matrix/GSE80496_series_matrix.txt.gz'
+Content type 'application/x-gzip' length 5814989 bytes (5.5 MB)
+==================================================
+downloaded 5.5 MB
+
+Rows: 24526 Columns: 46
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: "\t"
+chr  (1): ID_REF
+dbl (45): GSM2128369, GSM2128370, GSM2128371, GSM2128372, GSM2128373, GSM212...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+File stored at: 
+/var/folders/rg/v4c2fzz57n10wy9tzn0w2ljr0000gn/T//RtmpsZ8oqU/GPL6883.annot.gz
+Warning message:
+One or more parsing issues, see `problems()` for details 
+> MeningitisDataset2 <- MeningitisDataset2$GSE80496_series_matrix.txt.gz
+> 
+> MeningitisDataset4 <- getGEO("GSE40586", GSEMatrix = T, AnnotGPL = T)
+Found 1 file(s)
+GSE40586_series_matrix.txt.gz
+trying URL 'https://ftp.ncbi.nlm.nih.gov/geo/series/GSE40nnn/GSE40586/matrix/GSE40586_series_matrix.txt.gz'
+Content type 'application/x-gzip' length 2171115 bytes (2.1 MB)
+==================================================
+downloaded 2.1 MB
+
+Rows: 32321 Columns: 40
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: "\t"
+dbl (40): ID_REF, GSM997332, GSM997333, GSM997334, GSM997335, GSM997336, GSM...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+File stored at: 
+/var/folders/rg/v4c2fzz57n10wy9tzn0w2ljr0000gn/T//RtmpsZ8oqU/GPL6244.annot.gz
+Warning message:
+One or more parsing issues, see `problems()` for details 
+> MeningitisDataset4 <- MeningitisDataset4$GSE40586_series_matrix.txt.gz
+> 
+>   
+> save(MeningitisDataset2, MeningitisDataset4, file = "./Data/MeningitisDatasets.rda")
+> load("./Data/MeningitisDatasets.rda")
+> 
+> ############################################
+> ## Get the expression matrices
+> Expr_Meningitis2 <- exprs(MeningitisDataset2)
+> Expr_Meningitis4 <- exprs(MeningitisDataset4)
+> 
+> ############################################
+> ## Get the phenotype
+> Pheno_Meningitis2 <- pData(MeningitisDataset2)
+> Pheno_Meningitis4 <- pData(MeningitisDataset4)
+> 
+> 
+> ###########################################
+> ## Get the feature data for annotation
+> FeatData_Meningitis2 <- fData(MeningitisDataset2)
+> FeatData_Meningitis4 <- fData(MeningitisDataset4)
+> 
+> ############################
+> ## Annotation
+> ##############################################
+> ## Expr_Meningitis2
+> head(rownames(Expr_Meningitis2))
+[1] "ILMN_1343291" "ILMN_1651209" "ILMN_1651228" "ILMN_1651229" "ILMN_1651235"
+[6] "ILMN_1651236"
+> rownames(Expr_Meningitis2) <- FeatData_Meningitis2$`Gene symbol`
+> summary(is.na(rownames(Expr_Meningitis2)))
+   Mode   FALSE 
+logical   24526 
+> sel <- which(apply(Expr_Meningitis2, 1, function(x) all(is.finite(x)) ))
+> Expr_Meningitis2 <- Expr_Meningitis2[sel, ]
+> Expr_Meningitis2 <- Expr_Meningitis2[!is.na(rownames(Expr_Meningitis2)),]
+> dim(Expr_Meningitis2)
+[1] 24526    45
+> range(Expr_Meningitis2)
+[1]  5.944586 15.403856
+> Expr_Meningitis2 <- t(scale(t(Expr_Meningitis2), center = TRUE, scale = TRUE))
+> 
+> ##############################################
+> ## Expr_Meningitis4
+> head(rownames(Expr_Meningitis4))
+[1] "7892501" "7892502" "7892503" "7892504" "7892505" "7892506"
+> rownames(Expr_Meningitis4) <- FeatData_Meningitis4$`Gene symbol`
+> summary(is.na(rownames(Expr_Meningitis4)))
+   Mode   FALSE 
+logical   32321 
+> sel <- which(apply(Expr_Meningitis4, 1, function(x) all(is.finite(x)) ))
+> Expr_Meningitis4 <- Expr_Meningitis4[sel, ]
+> Expr_Meningitis4 <- Expr_Meningitis4[!is.na(rownames(Expr_Meningitis4)),]
+> dim(Expr_Meningitis4)
+[1] 32321    39
+> range(Expr_Meningitis4)
+[1]  1.43 14.64
+> Expr_Meningitis4 <- t(scale(t(Expr_Meningitis4), center = TRUE, scale = TRUE))
+> 
+> ####################################
+> ### Modify the phenotype
+> ###################################
+> # Pheno2
+> table(Pheno_Meningitis2$`disease state:ch1`)
+
+              healthy                sepsis sepsis and meningitis 
+                   21                    21                     3 
+> Pheno_Meningitis2$DiseaseStatus <- as.factor(Pheno_Meningitis2$`disease state:ch1`)
+> levels(Pheno_Meningitis2$DiseaseStatus) <- c("control", "case", "case") 
+> table(Pheno_Meningitis2$DiseaseStatus)
+
+control    case 
+     21      24 
+> 
+> ClassMeningitisVsNormal <- Pheno_Meningitis2$DiseaseStatus
+> 
+> ###################################
+> # Pheno4
+> table(Pheno_Meningitis4$`sample group:ch1`)
+
+bacterial meningitis      healthy control 
+                  21                   18 
+> Pheno_Meningitis4$DiseaseStatus <- as.factor(Pheno_Meningitis4$`sample group:ch1`)
+> levels(Pheno_Meningitis4$DiseaseStatus) <- c("case", "control")
+> Pheno_Meningitis4$DiseaseStatus <- factor(Pheno_Meningitis4$DiseaseStatus, levels = c('control', 'case'))
+> table(Pheno_Meningitis4$DiseaseStatus)
+
+control    case 
+     18      21 
+> 
+> ClassMeningitisVsNormal4 <- Pheno_Meningitis4$DiseaseStatus
+> 
+> 
+> ####################################
+> ## Load the severe malaria signature
+> load("./Objs/RF_Comp.rda")
+> 
+> ## Load the cerebral malaria signature
+> load("./Objs/RF_Cerebral.rda")
+> #################
+> ## Predict in the 2nd cerebral dataset meningitis vs normal) using the two malaria signature
+> sel_severe <- intersect(rownames(RF_Comp$importance), rownames(Expr_Meningitis2))
+> sel_cerebral <- intersect(rownames(RF_Cerebral$importance), rownames(Expr_Meningitis2))
+> 
+> # Subset the severe signature
+> RF_Comp$importance <- RF_Comp$importance[sel_severe, ]
+> RF_Comp$importanceSD <- RF_Comp$importanceSD[sel_severe, ]
+> RF_Comp$forest$ncat <- RF_Comp$forest$ncat[sel_severe]
+> 
+> # Subset the cerebral signature
+> RF_Cerebral$importance <- RF_Cerebral$importance[sel_cerebral, ]
+> RF_Cerebral$importanceSD <- RF_Cerebral$importanceSD[sel_cerebral, ]
+> RF_Cerebral$forest$ncat <- RF_Cerebral$forest$ncat[sel_cerebral]
+> 
+> # transpose the expression matrix
+> TestingData_Meningitis2 <- t(Expr_Meningitis2)
+> 
+> PredVotes_Meningitis2_severe <- predict(RF_Comp, newdata = TestingData_Meningitis2, type = "vote")
+> PredVotes_Meningitis2_cerebral <- predict(RF_Cerebral, newdata = TestingData_Meningitis2, type = "vote")
+> 
+> # For ROC and PRC curves
+> # Severe signauture:
+> sscurves_Meningitis2_severe <- evalmod(scores = PredVotes_Meningitis2_severe[,2], labels = ClassMeningitisVsNormal)
+> sscurves_Meningitis2_severe
+
+    === AUCs ===
+
+     Model name Dataset ID Curve type       AUC
+   1         m1          1        ROC 0.5248016
+   2         m1          1        PRC 0.5680394
+
+
+    === Input data ===
+
+     Model name Dataset ID # of negatives # of positives
+   1         m1          1             21             24
+
+> ROC_Meningitis2_severe <- autoplot(sscurves_Meningitis2_severe, curvetype = c("ROC")) + labs(title = "GSE80496 (meningitis vs healthy controls)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.53"), size = 3)
+> 
+> # cerebral signauture:
+> sscurves_Meningitis2_cerebral <- evalmod(scores = PredVotes_Meningitis2_cerebral[,2], labels = ClassMeningitisVsNormal)
+> sscurves_Meningitis2_cerebral
+
+    === AUCs ===
+
+     Model name Dataset ID Curve type       AUC
+   1         m1          1        ROC 0.1150794
+   2         m1          1        PRC 0.3518045
+
+
+    === Input data ===
+
+     Model name Dataset ID # of negatives # of positives
+   1         m1          1             21             24
+
+> ROC_Meningitis2_cerebral <- autoplot(sscurves_Meningitis2_cerebral, curvetype = c("ROC")) + labs(title = "GSE80496 (meningitis vs healthy controls)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.12"), size = 3)
+> 
+> ####################################
+> #################
+> ## Load the severe malaria signature
+> load("./Objs/RF_Comp.rda")
+> 
+> ## Load the cerebral malaria signature
+> load("./Objs/RF_Cerebral.rda")
+> 
+> # transpose the expression matrix
+> TestingData_Meningitis4 <- t(Expr_Meningitis4)
+> 
+> PredVotes_Meningitis4_severe <- predict(RF_Comp, newdata = TestingData_Meningitis4, type = "vote")
+> PredVotes_Meningitis4_cerebral <- predict(RF_Cerebral, newdata = TestingData_Meningitis4, type = "vote")
+> 
+> # For ROC and PRC curves
+> # severe signature:
+> sscurves_Meningitis4_severe <- evalmod(scores = PredVotes_Meningitis4_severe[,2], labels = ClassMeningitisVsNormal4)
+> sscurves_Meningitis4_severe
+
+    === AUCs ===
+
+     Model name Dataset ID Curve type       AUC
+   1         m1          1        ROC 0.7500000
+   2         m1          1        PRC 0.8345885
+
+
+    === Input data ===
+
+     Model name Dataset ID # of negatives # of positives
+   1         m1          1             18             21
+
+> ROC_Meningitis4_severe <- autoplot(sscurves_Meningitis4_severe, curvetype = c("ROC")) + labs(title = "GSE40586 (meningitis vs healthy controls)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.75"), size = 3)
+> 
+> # cerebral signature:
+> sscurves_Meningitis4_cerebral <- evalmod(scores = PredVotes_Meningitis4_cerebral[,2], labels = ClassMeningitisVsNormal4)
+> sscurves_Meningitis4_cerebral
+
+    === AUCs ===
+
+     Model name Dataset ID Curve type       AUC
+   1         m1          1        ROC 0.3015873
+   2         m1          1        PRC 0.4156348
+
+
+    === Input data ===
+
+     Model name Dataset ID # of negatives # of positives
+   1         m1          1             18             21
+
+> ROC_Meningitis4_cerebral <- autoplot(sscurves_Meningitis4_cerebral, curvetype = c("ROC")) + labs(title = "GSE40586 (meningitis vs healthy controls)") + annotate("text", x = .65, y = .25, label = paste("AUC = 0.30"), size = 3)
+> 
+> #################################################
+> ### Save
+> save(ROC_Meningitis2_severe, ROC_Meningitis4_severe, file = "./Objs/Meningitis_Curves_severe.rda")
+> save(ROC_Meningitis2_cerebral, ROC_Meningitis4_cerebral, file = "./Objs/Meningitis_Curves_cerebral.rda")
+> 
+> ######################
+> sessionInfo()
+R version 4.0.3 (2020-10-10)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices datasets  utils     methods  
+[8] base     
+
+other attached packages:
+[1] ggplot2_3.3.5       precrec_0.12.7      pROC_1.18.0        
+[4] randomForest_4.6-14 GEOquery_2.58.0     Biobase_2.50.0     
+[7] BiocGenerics_0.36.0
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.7        pillar_1.6.2      compiler_4.0.3    plyr_1.8.6       
+ [5] tools_4.0.3       bit_4.0.4         lifecycle_1.0.0   tibble_3.1.4     
+ [9] gtable_0.3.0      pkgconfig_2.0.3   rlang_0.4.11      cli_3.0.1        
+[13] rstudioapi_0.13   DBI_1.1.1         curl_4.3.2        withr_2.4.2      
+[17] dplyr_1.0.7       xml2_1.3.2        generics_0.1.0    vctrs_0.3.8      
+[21] hms_1.1.0         bit64_4.0.5       grid_4.0.3        tidyselect_1.1.1 
+[25] glue_1.4.2        data.table_1.14.0 R6_2.5.1          fansi_0.5.0      
+[29] vroom_1.5.4       limma_3.46.0      tzdb_0.1.2        readr_2.0.1      
+[33] purrr_0.3.4       tidyr_1.1.3       magrittr_2.0.1    scales_1.1.1     
+[37] ellipsis_0.3.2    assertthat_0.2.1  colorspace_2.0-2  renv_0.14.0      
+[41] utf8_1.2.2        munsell_0.5.0     crayon_1.4.1     
+> 
+> 
+> 
+> 
+> 
+> 
+> proc.time()
+   user  system elapsed 
+ 33.789   4.736  32.327 

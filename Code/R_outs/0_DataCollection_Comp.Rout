@@ -1,0 +1,1798 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin17.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+* Project '~/' loaded. [renv 0.13.2]
+> #############################################################################
+> #############################################################################
+> ## Mohamed Omar
+> ## 10/4/2019
+> ## Goal: Getting and organizing the data for the next step 
+> ############################################################################
+> rm(list = ls())
+> 
+> setwd("~/Documents/Research/Projects/Malaria")
+> 
+> renv::activate("~/Documents/Research/Projects/Malaria")
+* Project '~/Documents/Research/Projects/Malaria' loaded. [renv 0.14.0]
+Warning message:
+renv 0.14.0 was loaded from project library, but this project is configured to use renv 0.12.2.
+Use `renv::record("renv@0.14.0")` to record renv 0.14.0 in the lockfile.
+Use `renv::restore(packages = "renv")` to install renv 0.12.2 into the project library. 
+> 
+> library(GEOquery)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Setting options('download.file.method.GEOquery'='auto')
+Setting options('GEOquery.inmemory.gpl'=FALSE)
+> library(Biobase)
+> library(sampling)
+> library(limma)
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+> library(edgeR)
+> library(caret)
+Loading required package: lattice
+Loading required package: ggplot2
+
+Attaching package: ‘caret’
+
+The following object is masked from ‘package:sampling’:
+
+    cluster
+
+> 
+> ### Getting the data 
+> # dataset1_2 <- getGEO("GSE1124", GSEMatrix = TRUE, AnnotGPL = TRUE)
+> # dataset1 <- dataset1_2$`GSE1124-GPL96_series_matrix.txt.gz`
+> # dataset2 <- dataset1_2$`GSE1124-GPL97_series_matrix.txt.gz`
+> # 
+> # dataset3 <- getGEO("GSE117613", GSEMatrix = TRUE, AnnotGPL = TRUE)
+> # dataset3 <- dataset3$GSE117613_series_matrix.txt.gz
+> # 
+> # dataset4 <- getGEO("GSE35858", GSEMatrix = TRUE, AnnotGPL = TRUE)
+> # dataset4 <- dataset4$GSE35858_series_matrix.txt.gz
+> # 
+> # dataset5 <- getGEO("GSE34404", GSEMatrix = TRUE, AnnotGPL = TRUE)
+> # dataset5 <- dataset5$GSE34404_series_matrix.txt.gz
+> # 
+> # dataset6 <- getGEO("GSE116306", GSEMatrix = TRUE, AnnotGPL = TRUE)
+> # dataset6 <- dataset6$GSE116306_series_matrix.txt.gz
+> # 
+> # dataset7 <- getGEO("GSE119150", GSEMatrix = TRUE, AnnotGPL = TRUE) # Problem
+> # dataset7 <- dataset7$GSE119150_series_matrix.txt.gz
+> # 
+> # dataset8 <- getGEO("GSE16463", GSEMatrix = TRUE, AnnotGPL = TRUE)
+> # dataset8 <- dataset8$GSE16463_series_matrix.txt.gz
+> # 
+> # dataset9 <- getGEO("GSE72058", GSEMatrix = TRUE, AnnotGPL = TRUE)
+> # dataset9 <- dataset9$GSE72058_series_matrix.txt.gz
+> # 
+> # save(dataset1, dataset2, dataset3, dataset4, dataset5, dataset6, dataset7, dataset8, dataset9, file = "./Data/MalariaData.rda")
+> 
+> 
+> load("./Data/MalariaData.rda")
+> 
+> ##################
+> ## Expression
+> 
+> expr1 <- exprs(dataset1)
+> expr2 <- exprs(dataset2)
+> expr3 <- exprs(dataset3)
+> expr4 <- exprs(dataset4)
+> expr5 <- exprs(dataset5)
+> expr6 <- exprs(dataset6)
+> expr7 <- exprs(dataset7)
+> expr8 <- exprs(dataset8)
+> expr9 <- exprs(dataset9)
+> 
+> ####################
+> ## Feature data
+> featData1 <- fData(dataset1)
+> featData2 <- fData(dataset2)
+> featData3 <- fData(dataset3)
+> featData4 <- fData(dataset4)
+> featData5 <- fData(dataset5)
+> featData6 <- fData(dataset6)
+> featData7 <- fData(dataset7)
+> featData8 <- fData(dataset8)
+> featData9 <- fData(dataset9)
+> 
+> #############################3
+> ## Phenotype
+> pheno1 <- pData(dataset1)
+> pheno2 <- pData(dataset2)
+> pheno3 <- pData(dataset3)
+> pheno4 <- pData(dataset4)
+> pheno5 <- pData(dataset5)
+> pheno6 <- pData(dataset6)
+> pheno7 <- pData(dataset7)
+> pheno8 <- pData(dataset8)
+> pheno9 <- pData(dataset9)
+> 
+> ############################
+> ## Annotation
+> 
+> ## Expr1
+> head(rownames(expr1))
+[1] "1007_s_at" "1053_at"   "117_at"    "121_at"    "1255_g_at" "1294_at"  
+> rownames(expr1) <- featData1$`Gene symbol`
+> summary(is.na(rownames(expr1)))
+   Mode   FALSE 
+logical   22283 
+> #rownames(expr1) <- gsub("-","", rownames(expr1))
+> #rownames(expr1) <- gsub("_","",rownames(expr1))
+> sel <- which(apply(expr1, 1, function(x) all(is.finite(x)) ))
+> expr1 <- expr1[sel, ]
+> expr1 <- expr1[!is.na(rownames(expr1)),]
+> dim(expr1)
+[1] 22283    25
+> 
+> expr1 <- log2(expr1 + 1)
+> range(expr1)
+[1]  0.08488011 14.91411881
+> plot(density(expr1))
+> boxplot(expr1)
+> # X1 <- expr1
+> # ffun <- filterfun(pOverA(p = 0.5, A = 100))
+> # filt1 <- genefilter(2^X1,ffun)
+> # expr1 <- expr1[filt1,]
+> # 
+> expr1 <- t(scale(t(expr1), center = TRUE, scale = TRUE))
+> 
+> #############################
+> ## Expr2
+> head(rownames(expr2))
+[1] "200000_s_at" "200001_at"   "200002_at"   "200003_s_at" "200004_at"  
+[6] "200005_at"  
+> rownames(expr2) <- featData2$`Gene symbol`
+> expr2 <- expr2[!(rownames(expr2) == ""), ]
+> #rownames(expr2) <- gsub("-","", rownames(expr2))
+> # rownames(expr2) <- gsub("_","",rownames(expr2))
+> sel <- which(apply(expr2, 1, function(x) all(is.finite(x)) ))
+> expr2 <- expr2[sel, ]
+> expr2 <- expr2[!is.na(rownames(expr2)),]
+> dim(expr2)
+[1] 16667    22
+> 
+> expr2 <- log2(expr2 + 1)
+> range(expr2)
+[1]  0.1746902 15.7103921
+> plot(density(expr2))
+> boxplot(expr2)
+> 
+> # X2 <- expr2
+> # ffun <- filterfun(pOverA(p = 0.5, A = 100))
+> # filt2 <- genefilter(2^X2,ffun)
+> # expr2 <- expr2[filt2,]
+> # dim(expr2)
+> # 
+> expr2 <- t(scale(t(expr2), center = TRUE, scale = TRUE))
+> 
+> 
+> ##############################
+> ## Expr3
+> head(rownames(expr3))
+[1] "ILMN_1343291" "ILMN_1343295" "ILMN_1651199" "ILMN_1651209" "ILMN_1651210"
+[6] "ILMN_1651221"
+> rownames(expr3) <- featData3$`Gene symbol`
+> expr3 <- expr3[!(rownames(expr3) == ""), ]
+> #rownames(expr3) <- gsub("-","", rownames(expr3))
+> # rownames(expr3) <- gsub("_","",rownames(expr3))
+> sel <- which(apply(expr3, 1, function(x) all(is.finite(x)) ))
+> expr3 <- expr3[sel, ]
+> expr3 <- expr3[!is.na(rownames(expr3)),]
+> dim(expr3)
+[1] 31266    46
+> 
+> range(expr3)
+[1]  5.226167 14.502661
+> plot(density(expr3))
+> boxplot(expr3[,1:15])
+> 
+> # X3 <- expr3
+> # ffun <- filterfun(pOverA(p = 0.5, A = 100))
+> # filt3 <- genefilter(2^X3,ffun)
+> # expr3 <- expr3[filt3,]
+> # dim(expr3)
+> # 
+> expr3 <- t(scale(t(expr3), center = TRUE, scale = TRUE))
+> 
+> #############################3
+> ## Expr4
+> head(rownames(expr4))
+[1] "1" "2" "3" "4" "5" "6"
+> rownames(expr4) <- featData4$`Composite Element Database Entry[Gene Symbol]`
+> expr4 <- expr4[!(rownames(expr4) == ""), ]
+> #rownames(expr4) <- gsub("-","", rownames(expr4))
+> # rownames(expr4) <- gsub("_","",rownames(expr4))
+> sel <- which(apply(expr4, 1, function(x) all(is.finite(x)) ))
+> expr4 <- expr4[sel, ]
+> expr4 <- expr4[!is.na(rownames(expr4)),]
+> dim(expr4)
+[1] 18112    37
+> 
+> range(expr4)  ## Z scored
+[1] -11.512  11.813
+> plot(density(expr4))
+> boxplot(expr4[,1:15])
+> 
+> # X3 <- expr4
+> # ffun <- filterfun(pOverA(p = 0.5, A = 100))
+> # filt3 <- genefilter(2^X3,ffun)
+> # expr4 <- expr4[filt3,]
+> # dim(expr4)
+> # 
+> # expr4 <- t(scale(t(expr4), center = TRUE, scale = TRUE))
+> 
+> #############################3
+> ## Expr5
+> head(rownames(expr5))
+[1] "ILMN_1343291" "ILMN_1343295" "ILMN_1651199" "ILMN_1651209" "ILMN_1651210"
+[6] "ILMN_1651221"
+> rownames(expr5) <- featData5$`Gene symbol`
+> expr5 <- expr5[!(rownames(expr5) == ""), ]
+> #rownames(expr5) <- gsub("-","", rownames(expr5))
+> # rownames(expr5) <- gsub("_","",rownames(expr5))
+> sel <- which(apply(expr5, 1, function(x) all(is.finite(x)) ))
+> expr5 <- expr5[sel, ]
+> expr5 <- expr5[!is.na(rownames(expr5)),]
+> dim(expr5)
+[1] 31266   155
+> 
+> expr5 <- log2(expr5 + 1)
+> range(expr5)
+[1]  6.193362 14.612270
+> plot(density(expr5))
+> boxplot(expr5[,1:15])
+> 
+> # X3 <- expr5
+> # ffun <- filterfun(pOverA(p = 0.5, A = 100))
+> # filt3 <- genefilter(2^X3,ffun)
+> # expr5 <- expr5[filt3,]
+> # dim(expr5)
+> # 
+> expr5 <- t(scale(t(expr5), center = TRUE, scale = TRUE))
+> 
+> #############################3
+> ## Expr6
+> head(rownames(expr6))
+[1] "1" "2" "3" "4" "5" "6"
+> rownames(expr6) <- featData6$GENE_SYMBOL
+> expr6 <- expr6[!(rownames(expr6) == ""), ]
+> #rownames(expr6) <- gsub("-","", rownames(expr6))
+> # rownames(expr6) <- gsub("_","",rownames(expr6))
+> sel <- which(apply(expr6, 1, function(x) all(is.finite(x)) ))
+> expr6 <- expr6[sel, ]
+> expr6 <- expr6[!is.na(rownames(expr6)),]
+> dim(expr6)
+[1] 54295    16
+> 
+> range(expr6)
+[1]  5.67148 18.59075
+> plot(density(expr6))
+> boxplot(expr6[,1:15])
+> 
+> # X3 <- expr6
+> # ffun <- filterfun(pOverA(p = 0.5, A = 100))
+> # filt3 <- genefilter(2^X3,ffun)
+> # expr6 <- expr6[filt3,]
+> # dim(expr6)
+> # 
+> expr6 <- t(scale(t(expr6), center = TRUE, scale = TRUE))
+> 
+> #############################3
+> ## Expr7
+> head(rownames(expr7))
+[1] "11715100_at"   "11715101_s_at" "11715102_x_at" "11715103_x_at"
+[5] "11715104_s_at" "11715105_at"  
+> rownames(expr7) <- featData7$`Gene Symbol`
+> expr7 <- expr7[!(rownames(expr7) == ""), ]
+> #rownames(expr7) <- gsub("-","", rownames(expr7))
+> # rownames(expr7) <- gsub("_","",rownames(expr7))
+> sel <- which(apply(expr7, 1, function(x) all(is.finite(x)) ))
+> expr7 <- expr7[sel, ]
+> expr7 <- expr7[!is.na(rownames(expr7)),]
+> dim(expr7)
+[1] 40872    12
+> 
+> range(expr7)
+[1]  0.6077523 14.0834872
+> plot(density(expr7))
+> boxplot(expr7[,1:10])
+> 
+> # X3 <- expr7
+> # ffun <- filterfun(pOverA(p = 0.5, A = 100))
+> # filt3 <- genefilter(2^X3,ffun)
+> # expr7 <- expr7[filt3,]
+> # dim(expr7)
+> # 
+> expr7 <- t(scale(t(expr7), center = TRUE, scale = TRUE))
+> 
+> #############################3
+> ## Expr8
+> head(rownames(expr8))
+[1] "ILMN_1343289" "ILMN_1343290" "ILMN_1343291" "ILMN_1343292" "ILMN_1343293"
+[6] "ILMN_1343294"
+> rownames(expr8) <- featData8$`Gene symbol`
+> expr8 <- expr8[!(rownames(expr8) == ""), ]
+> #rownames(expr8) <- gsub("-","", rownames(expr8))
+> # rownames(expr8) <- gsub("_","",rownames(expr8))
+> sel <- which(apply(expr8, 1, function(x) all(is.finite(x)) ))
+> expr8 <- expr8[sel, ]
+> expr8 <- expr8[!is.na(rownames(expr8)),]
+> dim(expr8)
+[1] 24722    24
+> 
+> range(expr8)  ## Z-scored
+[1] -7.228464  7.640433
+> plot(density(expr8))
+> boxplot(expr8[,1:10])
+> 
+> # X3 <- expr8
+> # ffun <- filterfun(pOverA(p = 0.5, A = 100))
+> # filt3 <- genefilter(2^X3,ffun)
+> # expr8 <- expr8[filt3,]
+> # dim(expr8)
+> # 
+> # expr8 <- t(scale(t(expr8), center = TRUE, scale = TRUE))
+> 
+> #############################3
+> ## Expr9
+> head(rownames(expr9))
+[1] "7892501" "7892502" "7892503" "7892504" "7892505" "7892506"
+> rownames(expr9) <- featData9$`Gene symbol`
+> expr9 <- expr9[!(rownames(expr9) == ""), ]
+> #rownames(expr9) <- gsub("-","", rownames(expr9))
+> # rownames(expr9) <- gsub("_","",rownames(expr9))
+> sel <- which(apply(expr9, 1, function(x) all(is.finite(x)) ))
+> expr9 <- expr9[sel, ]
+> expr9 <- expr9[!is.na(rownames(expr9)),]
+> dim(expr9)
+[1] 21488    98
+> 
+> expr9 <- log2(expr9 + 1)
+> range(expr9)  
+[1]  2.828149 14.367499
+> plot(density(expr9))
+> boxplot(expr9[,1:10])
+> 
+> # X3 <- expr9
+> # ffun <- filterfun(pOverA(p = 0.5, A = 100))
+> # filt3 <- genefilter(2^X3,ffun)
+> # expr9 <- expr9[filt3,]
+> # dim(expr9)
+> # 
+> expr9 <- t(scale(t(expr9), center = TRUE, scale = TRUE))
+> 
+> ################################################################################
+> ###############################################################################
+> ### Modify the phenotype
+> 
+> # cereberal and severe anemia are considered "complicated"
+> # I put the asymptomatic as part of the uncomplicated
+> 
+> # Pheno1
+> pheno1 <- pheno1[!(pheno1$`diesease status:ch1` == "healthy"), ]
+> pheno1$DiseaseStatus <- as.factor(pheno1$`diesease status:ch1`)
+> levels(pheno1$DiseaseStatus) <- c("unComplicated", "Complicated", "Complicated", "unComplicated") 
+> table(pheno1$DiseaseStatus)
+
+unComplicated   Complicated 
+           10            10 
+> 
+> expr1 <- expr1[, colnames(expr1) %in% rownames(pheno1)]
+> all(rownames(pheno1) == colnames(expr1))
+[1] TRUE
+> 
+> # Pheno2
+> pheno2 <- pheno2[!(pheno2$`diesease status:ch1` == "healthy"), ]
+> pheno2$DiseaseStatus <- as.factor(pheno2$`diesease status:ch1`)
+> levels(pheno2$DiseaseStatus) <- c("unComplicated", "Complicated", "Complicated", "unComplicated") 
+> table(pheno2$DiseaseStatus)
+
+unComplicated   Complicated 
+            8             9 
+> 
+> expr2 <- expr2[, colnames(expr2) %in% rownames(pheno2)]
+> all(rownames(pheno2) == colnames(expr2))
+[1] TRUE
+> 
+> # Pheno3
+> pheno3 <- pheno3[!(pheno3$`diagnosis:ch1` == "no Plasmodium falciparum infection"), ]
+> pheno3$DiseaseStatus <- as.factor(pheno3$`diagnosis:ch1`)
+> levels(pheno3$DiseaseStatus) <- c("Complicated", "Complicated") 
+> table(pheno3$DiseaseStatus)
+
+Complicated 
+         34 
+> 
+> expr3 <- expr3[, colnames(expr3) %in% rownames(pheno3)]
+> all(rownames(pheno3) == colnames(expr3))
+[1] TRUE
+> 
+> # Pheno4
+> pheno4 <- pheno4[!(pheno4$`disease state:ch2` == "Healthy"), ]
+> pheno4$DiseaseStatus <- as.factor(pheno4$`disease state:ch2`)
+> levels(pheno4$DiseaseStatus) <- c("Complicated", "unComplicated") 
+> table(pheno4$DiseaseStatus)
+
+  Complicated unComplicated 
+           20             9 
+> 
+> expr4 <- expr4[, colnames(expr4) %in% rownames(pheno4)]
+> all(rownames(pheno4) == colnames(expr4))
+[1] TRUE
+> 
+> # Pheno5
+> # This dataset is not clear about the complication status >> use parasitemia
+> pheno5 <- pheno5[!(pheno5$source_name_ch1 == "Whole blood, age-matched control"), ]
+> pheno5$DiseaseStatus <- as.factor(pheno5$`parasitemia category:ch1`)
+> levels(pheno5$DiseaseStatus) <- c("Complicated", "unComplicated") 
+> table(pheno5$DiseaseStatus)
+
+  Complicated unComplicated 
+           42            52 
+> 
+> expr5 <- expr5[, colnames(expr5) %in% rownames(pheno5)]
+> all(rownames(pheno5) == colnames(expr5))
+[1] TRUE
+> 
+> # Pheno6
+> pheno6$DiseaseStatus <- as.factor(pheno6$`disease state:ch1`)
+> levels(pheno6$DiseaseStatus) <- c("Complicated", "unComplicated", "Complicated") 
+> table(pheno6$DiseaseStatus)
+
+  Complicated unComplicated 
+           10             6 
+> 
+> #expr6 <- expr6[, colnames(expr6) %in% rownames(pheno6)]
+> all(rownames(pheno6) == colnames(expr6))
+[1] TRUE
+> 
+> # Pheno7
+> # Use parasitemia
+> pheno7 <- pheno7[!(pheno7$`subject status:ch1` == "normal, healthy subject"), ]
+> pheno7$DiseaseStatus <- c("unComplicated", "unComplicated", "unComplicated", "Complicated", "Complicated", "Complicated")
+> pheno7$DiseaseStatus <- as.factor(pheno7$DiseaseStatus)
+> levels(pheno7$DiseaseStatus) <- c("Complicated", "unComplicated") 
+> table(pheno7$DiseaseStatus)
+
+  Complicated unComplicated 
+            3             3 
+> 
+> expr7 <- expr7[, colnames(expr7) %in% rownames(pheno7)]
+> all(rownames(pheno7) == colnames(expr7))
+[1] TRUE
+> 
+> # Pheno8
+> pheno8 <- pheno8[pheno8$`disease group:ch1` == "Malaria", ]
+> pheno8$DiseaseStatus <- as.factor(pheno8$`disease group:ch1`)
+> levels(pheno8$DiseaseStatus) <- c("unComplicated") 
+> table(pheno8$DiseaseStatus)
+
+unComplicated 
+            4 
+> 
+> expr8 <- expr8[, colnames(expr8) %in% rownames(pheno8)]
+> all(rownames(pheno8) == colnames(expr8))
+[1] TRUE
+> 
+> # Pheno9
+> pheno9$DiseaseStatus <- rep("Complicated", nrow(pheno9))
+> table(pheno9$DiseaseStatus)
+
+Complicated 
+         98 
+> 
+> ########################################################################
+> ########################################################################
+> 
+> allpheno <- list(pheno1, pheno2, pheno3, pheno4, pheno5, pheno6, pheno7, pheno8, pheno9)
+> names(allpheno) <- c("GSE1124-GPL96", "GSE1124-GPL97", "GSE117613", "GSE35858", "GSE34404", "GSE116306", "GSE119150", "GSE16463", "GSE72058")
+> 
+> allExpr <- list(expr1, expr2, expr3, expr4, expr5, expr6, expr7, expr8, expr9)
+> names(allExpr) <- c("GSE1124-GPL96", "GSE1124-GPL97", "GSE117613", "GSE35858", "GSE34404", "GSE116306", "GSE119150", "GSE16463", "GSE72058")
+> 
+> 
+> ### Filter phenotype information for the required samples
+> DiseaseStatus <- mapply(x=allpheno, FUN=function(x) {
++   x <- x[,"DiseaseStatus"]
++   out <- factor(x, levels=c("unComplicated", "Complicated"))
++   out
++ })
+> 
+> ###################################################################################
+> ##################################################################################
+> 
+> ### Find commom subset of genes
+> # The N of common genes is small >> consider removing datasets with few genes
+> commonGenes <- Reduce("intersect", lapply(allExpr, rownames))
+> 
+> 
+> ### Filter expression for the required samples
+> exprsMalaria <- mapply(x=allExpr, FUN=function(x, gns) {
++   x <- x[ gns ,]
++ }, MoreArgs=list(gns=commonGenes))
+> 
+> ### Check
+> all(names(exprsMalaria) == names(DiseaseStatus))
+[1] TRUE
+> 
+> ### Check order
+> all(rownames(allpheno$`GSE1124-GPL96`) == colnames(allExpr$`GSE1124-GPL96`))
+[1] TRUE
+> all(rownames(allpheno$`GSE1124-GPL97`) == colnames(allExpr$`GSE1124-GPL97`))
+[1] TRUE
+> all(rownames(allpheno$GSE117613) == colnames(allExpr$GSE117613))
+[1] TRUE
+> all(rownames(allpheno$GSE35858) == colnames(allExpr$GSE35858))
+[1] TRUE
+> all(rownames(allpheno$GSE34404) == colnames(allExpr$GSE34404))
+[1] TRUE
+> all(rownames(allpheno$GSE116306) == colnames(allExpr$GSE116306))
+[1] TRUE
+> all(rownames(allpheno$GSE119150) == colnames(allExpr$GSE119150))
+[1] TRUE
+> all(rownames(allpheno$GSE16463) == colnames(allExpr$GSE16463))
+[1] TRUE
+> all(rownames(allpheno$GSE72058) == colnames(allExpr$GSE72058))
+[1] TRUE
+> 
+> 
+> ##################################################################
+> #####################
+> ## All combined
+> allMat <- do.call("cbind", exprsMalaria)
+> allGroup <- unlist(DiseaseStatus)
+> allStudies <- names(allGroup)
+> 
+> tmp <- lapply(exprsMalaria, colnames)
+> tmp <- mapply(smp=tmp, gse=names(tmp), FUN=cbind)
+> allStudies <- as.data.frame(do.call("rbind", tmp))
+> 
+> 
+> names(allGroup) <- colnames(allMat)
+> all(colnames(allMat) == names(allGroup))
+[1] TRUE
+> 
+> 
+> AllMat_Annot <- cbind(t(allMat), allGroup)
+> AllMat_Annot <- as.data.frame(AllMat_Annot)
+> colnames(AllMat_Annot)[ncol(AllMat_Annot)] <- "ComplicationStatus"
+> AllMat_Annot$ComplicationStatus <- as.factor(AllMat_Annot$ComplicationStatus)
+> levels(AllMat_Annot$ComplicationStatus) <- c("unComplicated", "Complicated")
+> table(AllMat_Annot$ComplicationStatus)
+
+unComplicated   Complicated 
+           92           226 
+> 
+> save(AllMat_Annot, file = "./Objs/AllMat_Annot.rda")
+> #############################################################
+> ### WBC count
+> 
+> allpheno$GSE117613$WBC <- as.character(allpheno$GSE117613$`wbc.count:ch1`)
+> allpheno$GSE117613$WBC <- as.numeric(allpheno$GSE117613$WBC)
+Warning message:
+NAs introduced by coercion 
+> 
+> allpheno$GSE34404$WBC <- as.character(allpheno$GSE34404$`white blood cells:ch1`)
+> allpheno$GSE34404$WBC <- as.numeric(allpheno$GSE34404$WBC)
+Warning message:
+NAs introduced by coercion 
+> 
+> allpheno$GSE116306$WBC <- as.character(allpheno$GSE116306$`leucocytes count (giga/l):ch1`)
+> allpheno$GSE116306$WBC <- as.numeric(allpheno$GSE116306$WBC)
+> 
+> allpheno$GSE119150$WBC <- as.character(allpheno$GSE119150$`wbc (×10^9/l):ch1`)
+> allpheno$GSE119150$WBC <- as.numeric(allpheno$GSE119150$WBC)
+> 
+> ### Covariates of relevance select complete cases: WBC count
+> allWBC <- lapply(allpheno, function(x) {
++   i <- grep("WBC", colnames(x))
++   if (length(i) == 0) out <- factor(rep("", nrow(x)))
++   else x <- as.numeric(x[, i  ])
++ })
+> 
+> 
+> allWBC <- unlist(allWBC)
+> 
+> 
+> #################################################################################
+> ###############################
+> ### Age
+> allpheno$GSE117613$AGE <- as.character(allpheno$GSE117613$characteristics_ch1.3)
+> allpheno$GSE117613$AGE <- gsub("age: ", "", allpheno$GSE117613$AGE)
+> allpheno$GSE117613$AGE <- as.numeric(allpheno$GSE117613$AGE)
+> 
+> 
+> allpheno$GSE34404$AGE <- as.character(allpheno$GSE34404$`age (years):ch1`)
+> allpheno$GSE34404$AGE <- as.numeric(allpheno$GSE34404$AGE)
+Warning message:
+NAs introduced by coercion 
+> 
+> allpheno$GSE116306$AGE <- as.character(allpheno$GSE116306$`age:ch1`)
+> allpheno$GSE116306$AGE <- as.numeric(allpheno$GSE116306$AGE)
+> 
+> allpheno$GSE119150$AGE <- as.character(allpheno$GSE119150$`age (years):ch1`)
+> allpheno$GSE119150$AGE <- as.numeric(allpheno$GSE119150$AGE)
+> 
+> allpheno$GSE16463$AGE <- as.character(allpheno$GSE16463$`age (years):ch1`)
+> allpheno$GSE16463$AGE <- as.numeric(allpheno$GSE16463$AGE)
+> 
+> ### Covariates of relevance select complete cases: AGE
+> allAGE <- lapply(allpheno, function(x) {
++   i <- grep("^AGE$", colnames(x))
++   if (length(i) == 0) out <- rep(NA, nrow(x))
++   else x <- as.numeric(x[, i  ])
++ })
+> allAGE <- unlist(allAGE)
+> 
+> ##################################################################################
+> ################################
+> ### Sex
+> allpheno$GSE117613$GENDER <- as.character(allpheno$GSE117613$`Sex:ch1`)
+> 
+> allpheno$GSE34404$GENDER <- as.character(allpheno$GSE34404$`gender:ch1`)
+> allpheno$GSE34404$GENDER[allpheno$GSE34404$GENDER == "M"] <- "Male"
+> allpheno$GSE34404$GENDER[allpheno$GSE34404$GENDER == "F"] <- "Female"
+> 
+> allpheno$GSE116306$GENDER <- as.character(allpheno$GSE116306$`gender:ch1`)
+> allpheno$GSE116306$GENDER[allpheno$GSE116306$GENDER == "M"] <- "Male"
+> allpheno$GSE116306$GENDER[allpheno$GSE116306$GENDER == "F"] <- "Female"
+> 
+> allpheno$GSE119150$GENDER <- as.character(allpheno$GSE119150$`gender:ch1`)
+> allpheno$GSE119150$GENDER[allpheno$GSE119150$GENDER == "male"] <- "Male"
+> 
+> allpheno$GSE16463$GENDER <- as.character(allpheno$GSE16463$`gender:ch1`)
+> 
+> ### Covariates of relevance select complete cases: SEX
+> allGENDER <- lapply(allpheno, function(x) {
++   i <- grep("GENDER", colnames(x))
++   if (length(i) == 0) out <- rep(NA, nrow(x))
++   else x <- factor(x[, i  ])
++ })
+> allGENDER <- factor(unlist(allGENDER))
+> 
+> 
+> #########################################################################
+> 
+> ### Assemble in one data.frame and turn numeric
+> covs <- data.frame(STUDIES=allStudies,
++                    WBC=allWBC,
++                    GENDER=allGENDER, 
++                    AGE=allAGE)
+> 
+> ### Prepare vocs for sampling
+> covs <- sapply(covs , function(x) as.numeric(factor(paste(x))) )
+> 
+> 
+> ###########################################################################
+> ###SAMPLING
+> 
+> ### Balanced stratification
+> set.seed(333)
+> trainingOrTesting <- balancedstratification(
++   covs[ , , drop=FALSE], strata=1*(allGroup == "Complicated"),
++   pik=inclusionprobabilities(1:nrow(covs), nrow(covs) * 0.3),
++   comment=TRUE, method=1)
+
+FLIGHT PHASE OF STRATUM 1
+BEGINNING OF THE FLIGHT PHASE
+The matrix of balanced variable has 6  variables and  92  units
+The size of the inclusion probability vector is  92 
+The sum of the inclusion probability vector is  21.34984 
+The inclusion probability vector has  92  non-integer elements
+Step 1  
+
+FLIGHT PHASE OF STRATUM 2
+BEGINNING OF THE FLIGHT PHASE
+The matrix of balanced variable has 6  variables and  226  units
+The size of the inclusion probability vector is  226 
+The sum of the inclusion probability vector is  74.05016 
+The inclusion probability vector has  226  non-integer elements
+Step 1  
+
+FINAL TREATMENT
+BEGINNING OF THE FLIGHT PHASE
+The matrix of balanced variable has 7  variables and  318  units
+The size of the inclusion probability vector is  318 
+The sum of the inclusion probability vector is  95.4 
+The inclusion probability vector has  12  non-integer elements
+Step 1  
+
+
+BEGINNING OF THE LANDING PHASE
+At the end of the flight phase, there remain  7 non integer probabilities 
+The sum of these probabilities is  2.4 
+This sum is  non-integer
+The linear program will consider  56  possible samples
+The mean cost is  0.5462709 
+The smallest cost is  0.007951894 
+The largest cost is  1.262536 
+The cost of the selected sample is 0.007951894
+
+QUALITY OF BALANCING
+                 TOTALS HorvitzThompson_estimators Relative_deviation
+Stratum1       21.34984                     22.000         3.04525299
+Stratum2       74.05016                     74.000        -0.06773347
+STUDIES.smp 50721.00000                  48206.771        -4.95697906
+STUDIES.gse  2064.00000                   2039.629        -1.18074838
+WBC          8903.00000                   8774.181        -1.44692082
+GENDER        720.00000                    673.887        -6.40458048
+AGE          9944.00000                   9312.089        -6.35469431
+> 
+> ### Show
+> apply(covs[, -ncol(covs),drop=FALSE], 2, table, allGroup, trainingOrTesting)
+$STUDIES.smp
+, , trainingOrTesting = 0
+
+     allGroup
+      unComplicated Complicated
+  1               0           0
+  2               0           1
+  3               0           0
+  4               0           1
+  5               0           0
+  6               0           1
+  7               0           1
+  8               0           0
+  9               0           1
+  10              0           1
+  11              0           1
+  12              0           1
+  13              0           0
+  14              0           1
+  15              0           0
+  16              0           0
+  17              0           1
+  18              0           1
+  19              0           1
+  20              0           0
+  21              0           0
+  22              0           0
+  23              0           1
+  24              0           1
+  25              0           1
+  26              0           0
+  27              0           1
+  28              0           1
+  29              0           0
+  30              0           0
+  31              0           1
+  32              0           1
+  33              0           1
+  34              0           1
+  35              0           0
+  36              0           0
+  37              0           0
+  38              0           1
+  39              0           0
+  40              0           1
+  41              0           1
+  42              0           1
+  43              0           0
+  44              0           0
+  45              0           0
+  46              0           1
+  47              0           1
+  48              0           1
+  49              0           0
+  50              0           1
+  51              0           0
+  52              0           1
+  53              0           0
+  54              0           1
+  55              0           0
+  56              0           1
+  57              0           0
+  58              0           1
+  59              0           0
+  60              0           1
+  61              0           0
+  62              0           0
+  63              0           0
+  64              0           0
+  65              0           0
+  66              0           1
+  67              0           0
+  68              0           0
+  69              0           1
+  70              0           1
+  71              0           0
+  72              0           0
+  73              0           0
+  74              0           0
+  75              0           0
+  76              0           0
+  77              0           0
+  78              0           0
+  79              0           1
+  80              0           1
+  81              0           1
+  82              0           0
+  83              0           0
+  84              0           1
+  85              0           1
+  86              0           0
+  87              0           0
+  88              0           0
+  89              0           0
+  90              0           1
+  91              0           1
+  92              0           0
+  93              0           0
+  94              0           1
+  95              0           1
+  96              0           0
+  97              0           0
+  98              0           1
+  99              0           1
+  100             0           1
+  101             0           0
+  102             0           1
+  103             0           0
+  104             0           0
+  105             1           0
+  106             1           0
+  107             0           0
+  108             1           0
+  109             1           0
+  110             0           0
+  111             0           1
+  112             0           0
+  113             0           1
+  114             0           1
+  115             0           1
+  116             0           1
+  117             0           1
+  118             0           1
+  119             0           1
+  120             0           1
+  121             0           1
+  122             0           1
+  123             0           1
+  124             0           1
+  125             0           1
+  126             0           1
+  127             0           1
+  128             0           1
+  129             0           1
+  130             0           1
+  131             0           1
+  132             0           1
+  133             0           1
+  134             0           1
+  135             0           1
+  136             0           1
+  137             0           1
+  138             0           1
+  139             0           1
+  140             0           1
+  141             0           1
+  142             0           1
+  143             0           1
+  144             0           1
+  145             0           1
+  146             0           0
+  147             0           1
+  148             0           1
+  149             1           0
+  150             0           0
+  151             1           0
+  152             0           0
+  153             0           1
+  154             0           1
+  155             1           0
+  156             0           0
+  157             0           0
+  158             1           0
+  159             1           0
+  160             1           0
+  161             1           0
+  162             1           0
+  163             1           0
+  164             1           0
+  165             1           0
+  166             1           0
+  167             1           0
+  168             1           0
+  169             0           1
+  170             0           1
+  171             0           1
+  172             0           1
+  173             0           1
+  174             0           1
+  175             0           1
+  176             0           1
+  177             0           1
+  178             0           1
+  179             1           0
+  180             1           0
+  181             1           0
+  182             1           0
+  183             1           0
+  184             1           0
+  185             1           0
+  186             1           0
+  187             0           1
+  188             0           1
+  189             0           0
+  190             0           1
+  191             0           1
+  192             0           0
+  193             0           1
+  194             0           1
+  195             0           1
+  196             0           0
+  197             1           0
+  198             1           0
+  199             0           1
+  200             0           0
+  201             0           1
+  202             1           0
+  203             0           0
+  204             1           0
+  205             1           0
+  206             0           1
+  207             1           0
+  208             0           0
+  209             0           1
+  210             0           0
+  211             0           1
+  212             1           0
+  213             0           0
+  214             1           0
+  215             0           0
+  216             0           1
+  217             1           0
+  218             0           1
+  219             1           0
+  220             1           0
+  221             1           0
+  222             0           1
+  223             0           0
+  224             0           0
+  225             1           0
+  226             0           1
+  227             1           0
+  228             0           0
+  229             0           0
+  230             1           0
+  231             1           0
+  232             0           0
+  233             0           0
+  234             0           1
+  235             0           0
+  236             0           0
+  237             1           0
+  238             1           0
+  239             0           1
+  240             1           0
+  241             0           1
+  242             0           1
+  243             1           0
+  244             0           0
+  245             0           1
+  246             0           1
+  247             0           1
+  248             0           1
+  249             0           1
+  250             1           0
+  251             1           0
+  252             0           1
+  253             0           0
+  254             0           1
+  255             0           0
+  256             0           0
+  257             0           0
+  258             1           0
+  259             0           1
+  260             0           0
+  261             1           0
+  262             0           1
+  263             1           0
+  264             0           0
+  265             1           0
+  266             0           0
+  267             1           0
+  268             0           1
+  269             0           1
+  270             0           1
+  271             0           0
+  272             1           0
+  273             1           0
+  274             0           1
+  275             0           1
+  276             0           0
+  277             1           0
+  278             0           1
+  279             1           0
+  280             0           0
+  281             1           0
+  282             0           0
+  283             1           0
+  284             1           0
+  285             1           0
+  286             0           1
+  287             0           0
+  288             0           1
+  289             1           0
+  290             1           0
+  291             0           1
+  292             0           1
+  293             0           1
+  294             0           0
+  295             0           1
+  296             1           0
+  297             0           1
+  298             0           1
+  299             0           1
+  300             1           0
+  301             0           0
+  302             1           0
+  303             1           0
+  304             1           0
+  305             1           0
+  306             0           0
+  307             0           1
+  308             0           1
+  309             0           1
+  310             1           0
+  311             0           1
+  312             0           0
+  313             0           1
+  314             0           1
+  315             0           1
+  316             0           1
+  317             0           1
+  318             0           1
+
+, , trainingOrTesting = 1
+
+     allGroup
+      unComplicated Complicated
+  1               0           1
+  2               0           0
+  3               0           1
+  4               0           0
+  5               0           1
+  6               0           0
+  7               0           0
+  8               0           1
+  9               0           0
+  10              0           0
+  11              0           0
+  12              0           0
+  13              0           1
+  14              0           0
+  15              0           1
+  16              0           1
+  17              0           0
+  18              0           0
+  19              0           0
+  20              0           1
+  21              0           1
+  22              0           1
+  23              0           0
+  24              0           0
+  25              0           0
+  26              0           1
+  27              0           0
+  28              0           0
+  29              0           1
+  30              0           1
+  31              0           0
+  32              0           0
+  33              0           0
+  34              0           0
+  35              0           1
+  36              0           1
+  37              0           1
+  38              0           0
+  39              0           1
+  40              0           0
+  41              0           0
+  42              0           0
+  43              0           1
+  44              0           1
+  45              0           1
+  46              0           0
+  47              0           0
+  48              0           0
+  49              0           1
+  50              0           0
+  51              0           1
+  52              0           0
+  53              0           1
+  54              0           0
+  55              0           1
+  56              0           0
+  57              0           1
+  58              0           0
+  59              0           1
+  60              0           0
+  61              0           1
+  62              0           1
+  63              0           1
+  64              0           1
+  65              0           1
+  66              0           0
+  67              0           1
+  68              0           1
+  69              0           0
+  70              0           0
+  71              0           1
+  72              0           1
+  73              0           1
+  74              0           1
+  75              0           1
+  76              0           1
+  77              0           1
+  78              0           1
+  79              0           0
+  80              0           0
+  81              0           0
+  82              0           1
+  83              0           1
+  84              0           0
+  85              0           0
+  86              0           1
+  87              0           1
+  88              0           1
+  89              0           1
+  90              0           0
+  91              0           0
+  92              0           1
+  93              0           1
+  94              0           0
+  95              0           0
+  96              0           1
+  97              0           1
+  98              0           0
+  99              0           0
+  100             0           0
+  101             0           1
+  102             0           0
+  103             0           1
+  104             0           1
+  105             0           0
+  106             0           0
+  107             1           0
+  108             0           0
+  109             0           0
+  110             1           0
+  111             0           0
+  112             0           1
+  113             0           0
+  114             0           0
+  115             0           0
+  116             0           0
+  117             0           0
+  118             0           0
+  119             0           0
+  120             0           0
+  121             0           0
+  122             0           0
+  123             0           0
+  124             0           0
+  125             0           0
+  126             0           0
+  127             0           0
+  128             0           0
+  129             0           0
+  130             0           0
+  131             0           0
+  132             0           0
+  133             0           0
+  134             0           0
+  135             0           0
+  136             0           0
+  137             0           0
+  138             0           0
+  139             0           0
+  140             0           0
+  141             0           0
+  142             0           0
+  143             0           0
+  144             0           0
+  145             0           0
+  146             0           1
+  147             0           0
+  148             0           0
+  149             0           0
+  150             1           0
+  151             0           0
+  152             0           1
+  153             0           0
+  154             0           0
+  155             0           0
+  156             1           0
+  157             1           0
+  158             0           0
+  159             0           0
+  160             0           0
+  161             0           0
+  162             0           0
+  163             0           0
+  164             0           0
+  165             0           0
+  166             0           0
+  167             0           0
+  168             0           0
+  169             0           0
+  170             0           0
+  171             0           0
+  172             0           0
+  173             0           0
+  174             0           0
+  175             0           0
+  176             0           0
+  177             0           0
+  178             0           0
+  179             0           0
+  180             0           0
+  181             0           0
+  182             0           0
+  183             0           0
+  184             0           0
+  185             0           0
+  186             0           0
+  187             0           0
+  188             0           0
+  189             0           1
+  190             0           0
+  191             0           0
+  192             0           1
+  193             0           0
+  194             0           0
+  195             0           0
+  196             0           1
+  197             0           0
+  198             0           0
+  199             0           0
+  200             1           0
+  201             0           0
+  202             0           0
+  203             1           0
+  204             0           0
+  205             0           0
+  206             0           0
+  207             0           0
+  208             1           0
+  209             0           0
+  210             1           0
+  211             0           0
+  212             0           0
+  213             0           1
+  214             0           0
+  215             1           0
+  216             0           0
+  217             0           0
+  218             0           0
+  219             0           0
+  220             0           0
+  221             0           0
+  222             0           0
+  223             0           1
+  224             1           0
+  225             0           0
+  226             0           0
+  227             0           0
+  228             0           1
+  229             0           1
+  230             0           0
+  231             0           0
+  232             0           1
+  233             1           0
+  234             0           0
+  235             1           0
+  236             1           0
+  237             0           0
+  238             0           0
+  239             0           0
+  240             0           0
+  241             0           0
+  242             0           0
+  243             0           0
+  244             1           0
+  245             0           0
+  246             0           0
+  247             0           0
+  248             0           0
+  249             0           0
+  250             0           0
+  251             0           0
+  252             0           0
+  253             0           1
+  254             0           0
+  255             0           1
+  256             1           0
+  257             0           1
+  258             0           0
+  259             0           0
+  260             1           0
+  261             0           0
+  262             0           0
+  263             0           0
+  264             0           1
+  265             0           0
+  266             1           0
+  267             0           0
+  268             0           0
+  269             0           0
+  270             0           0
+  271             1           0
+  272             0           0
+  273             0           0
+  274             0           0
+  275             0           0
+  276             1           0
+  277             0           0
+  278             0           0
+  279             0           0
+  280             0           1
+  281             0           0
+  282             0           1
+  283             0           0
+  284             0           0
+  285             0           0
+  286             0           0
+  287             1           0
+  288             0           0
+  289             0           0
+  290             0           0
+  291             0           0
+  292             0           0
+  293             0           0
+  294             0           1
+  295             0           0
+  296             0           0
+  297             0           0
+  298             0           0
+  299             0           0
+  300             0           0
+  301             0           1
+  302             0           0
+  303             0           0
+  304             0           0
+  305             0           0
+  306             0           1
+  307             0           0
+  308             0           0
+  309             0           0
+  310             0           0
+  311             0           0
+  312             1           0
+  313             0           0
+  314             0           0
+  315             0           0
+  316             0           0
+  317             0           0
+  318             0           0
+
+
+$STUDIES.gse
+, , trainingOrTesting = 0
+
+   allGroup
+    unComplicated Complicated
+  1            10          10
+  2             8           7
+  3             4           6
+  4             0          33
+  5             2           2
+  6             2           0
+  7            36          30
+  8             8          17
+  9             0          47
+
+, , trainingOrTesting = 1
+
+   allGroup
+    unComplicated Complicated
+  1             0           0
+  2             0           2
+  3             2           4
+  4             0           1
+  5             1           1
+  6             2           0
+  7            16          12
+  8             1           3
+  9             0          51
+
+
+$WBC
+, , trainingOrTesting = 0
+
+     allGroup
+      unComplicated Complicated
+  1              28          81
+  2               0           2
+  3               0           2
+  4               0           1
+  5               0           2
+  6               0           2
+  7               0           1
+  8               3           0
+  9               0           1
+  10              1           0
+  11              0           1
+  12              0           2
+  13              0           0
+  14              2           0
+  15              0           0
+  16              0           1
+  17              2           0
+  18              1           0
+  19              0           1
+  20              0           1
+  21              0           1
+  22              1           0
+  23              0           1
+  24              0           1
+  25              0           1
+  26              0           1
+  27              0           1
+  28              0           1
+  29              0           1
+  30              0           1
+  31              0           1
+  32              0           0
+  33              0           0
+  34              0           1
+  35              0           0
+  36              1           0
+  37              0           0
+  38              1           0
+  39              0           1
+  40              0           0
+  41              1           0
+  42              0           1
+  43              0           1
+  44              0           0
+  45              0           2
+  46              1           0
+  47              0           0
+  48              0           0
+  49              1           0
+  50              0           1
+  51              1           0
+  52              0           1
+  53              0           1
+  54              0           1
+  55              0           1
+  56              0           1
+  57              0           1
+  58              0           1
+  59              1           0
+  60              0           0
+  61              1           0
+  62              1           0
+  63              0           1
+  64              1           0
+  65              0           1
+  66              1           0
+  67              0           0
+  68              0           1
+  69              0           1
+  70              0           1
+  71              1           0
+  72              0           0
+  73              0           2
+  74              1           0
+  75              1           0
+  76              0           1
+  77              0           1
+  78              0           0
+  79              0           0
+  80              1           0
+  81              1           0
+  82              2           1
+  83              1           0
+  84              0           0
+  85              1           0
+  86              1           3
+  87              1           0
+  88              0           0
+  89              1           1
+  90              1           0
+  91              0           1
+  92              0           0
+  93              0           1
+  94              1           1
+  95              1           1
+  96              1           0
+  97              0           0
+  98              0           0
+  99              0           1
+  100             0           0
+  101             0           0
+  102             0           1
+  103             0           1
+  104             0           1
+  105             1           0
+  106             0           2
+  107             2           0
+  108             0           1
+  109             1           1
+  110             1           4
+
+, , trainingOrTesting = 1
+
+     allGroup
+      unComplicated Complicated
+  1               3          56
+  2               0           1
+  3               0           0
+  4               0           0
+  5               0           0
+  6               0           0
+  7               0           0
+  8               1           0
+  9               0           0
+  10              1           0
+  11              1           0
+  12              0           0
+  13              0           1
+  14              0           0
+  15              1           0
+  16              0           0
+  17              0           0
+  18              0           0
+  19              0           0
+  20              0           0
+  21              0           0
+  22              0           0
+  23              0           0
+  24              0           0
+  25              0           0
+  26              0           0
+  27              0           0
+  28              0           0
+  29              0           0
+  30              0           0
+  31              0           0
+  32              0           1
+  33              1           0
+  34              0           0
+  35              0           1
+  36              0           0
+  37              0           1
+  38              0           0
+  39              0           0
+  40              1           0
+  41              0           0
+  42              0           0
+  43              0           0
+  44              1           0
+  45              0           0
+  46              0           0
+  47              1           0
+  48              1           0
+  49              0           0
+  50              0           0
+  51              0           1
+  52              0           1
+  53              0           0
+  54              0           0
+  55              0           0
+  56              0           0
+  57              0           0
+  58              0           0
+  59              0           0
+  60              0           1
+  61              0           0
+  62              0           0
+  63              0           0
+  64              0           0
+  65              0           0
+  66              0           0
+  67              0           1
+  68              0           0
+  69              0           0
+  70              0           0
+  71              0           0
+  72              0           1
+  73              1           0
+  74              0           0
+  75              1           0
+  76              0           0
+  77              0           0
+  78              0           1
+  79              0           1
+  80              0           0
+  81              0           0
+  82              0           0
+  83              0           0
+  84              1           0
+  85              0           0
+  86              0           0
+  87              0           0
+  88              2           0
+  89              0           0
+  90              0           0
+  91              0           0
+  92              1           0
+  93              0           0
+  94              1           0
+  95              0           0
+  96              0           0
+  97              0           1
+  98              0           1
+  99              0           1
+  100             0           1
+  101             0           1
+  102             1           1
+  103             0           0
+  104             1           0
+  105             1           0
+  106             0           0
+  107             0           0
+  108             0           0
+  109             0           0
+  110             0           0
+
+
+$GENDER
+, , trainingOrTesting = 0
+
+   allGroup
+    unComplicated Complicated
+  1            24          33
+  2            20          38
+  3            26          81
+
+, , trainingOrTesting = 1
+
+   allGroup
+    unComplicated Complicated
+  1            15           8
+  2             6          10
+  3             1          56
+
+
+> 
+> ### Subset Training
+> mixTrainMat <- allMat[ , trainingOrTesting == 0]
+> mixTrainGroup <- allGroup[ trainingOrTesting == 0]
+> mixTrainStudy <- allStudies$smp[trainingOrTesting == 0]
+> mixTrainStudy <- allStudies[allStudies$smp %in% mixTrainStudy, ]
+> 
+> ### Subset Testing
+> mixTestMat <- allMat[ , trainingOrTesting == 1]
+> mixTestGroup <- allGroup[ trainingOrTesting == 1]
+> mixTestStudy <- allStudies$smp[ trainingOrTesting == 1]
+> mixTestStudy <- allStudies[allStudies$smp %in% mixTestStudy, ]
+> 
+> table(mixTrainGroup)
+mixTrainGroup
+unComplicated   Complicated 
+           70           152 
+> table(mixTestGroup)
+mixTestGroup
+unComplicated   Complicated 
+           22            74 
+> 
+> # Training and testing samples
+> TrainSamples <- colnames(mixTrainMat)
+> TestSamples <- colnames(mixTestMat)
+> 
+> PhenoTrain <- lapply(allpheno, function(x){
++   x <- x[rownames(x) %in% TrainSamples, ]
++ })
+> 
+> PhenoTest <- lapply(allpheno, function(x){
++   x <- x[rownames(x) %in% TestSamples, ]
++ })
+> 
+> ###########################################################################
+> ### Save
+> save(exprsMalaria, 
++      mixTrainMat, mixTrainGroup,
++      mixTestMat, mixTestGroup,
++      file="./Objs/MalariaDataGood_Comp2.rda")
+> 
+> save(allStudies, file = './Objs/batch.rda')
+> #########################################################################
+> #########################################################################
+> ########################################################################
+> sessionInfo()
+R version 4.0.3 (2020-10-10)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices datasets  utils     methods  
+[8] base     
+
+other attached packages:
+[1] caret_6.0-88        ggplot2_3.3.5       lattice_0.20-44    
+[4] edgeR_3.32.0        limma_3.46.0        sampling_2.9       
+[7] GEOquery_2.58.0     Biobase_2.50.0      BiocGenerics_0.36.0
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.7           locfit_1.5-9.4       lubridate_1.7.10    
+ [4] tidyr_1.1.3          listenv_0.8.0        class_7.3-19        
+ [7] assertthat_0.2.1     digest_0.6.27        ipred_0.9-11        
+[10] foreach_1.5.1        utf8_1.2.2           parallelly_1.28.1   
+[13] R6_2.5.1             plyr_1.8.6           stats4_4.0.3        
+[16] pillar_1.6.2         rlang_0.4.11         data.table_1.14.0   
+[19] rpart_4.1-15         Matrix_1.3-4         splines_4.0.3       
+[22] stringr_1.4.0        gower_0.2.2          readr_2.0.1         
+[25] munsell_0.5.0        compiler_4.0.3       pkgconfig_2.0.3     
+[28] globals_0.14.0       nnet_7.3-16          tidyselect_1.1.1    
+[31] tibble_3.1.4         prodlim_2019.11.13   lpSolve_5.6.15      
+[34] codetools_0.2-18     fansi_0.5.0          future_1.22.1       
+[37] crayon_1.4.1         dplyr_1.0.7          tzdb_0.1.2          
+[40] withr_2.4.2          ModelMetrics_1.2.2.2 MASS_7.3-54         
+[43] recipes_0.1.16       grid_4.0.3           nlme_3.1-152        
+[46] gtable_0.3.0         lifecycle_1.0.0      DBI_1.1.1           
+[49] magrittr_2.0.1       pROC_1.18.0          scales_1.1.1        
+[52] stringi_1.7.4        future.apply_1.8.1   renv_0.14.0         
+[55] reshape2_1.4.4       timeDate_3043.102    xml2_1.3.2          
+[58] ellipsis_0.3.2       generics_0.1.0       vctrs_0.3.8         
+[61] lava_1.6.10          iterators_1.0.13     tools_4.0.3         
+[64] glue_1.4.2           purrr_0.3.4          hms_1.1.0           
+[67] survival_3.2-13      colorspace_2.0-2    
+> 
+> 
+> proc.time()
+   user  system elapsed 
+ 21.591   1.525  24.677 
