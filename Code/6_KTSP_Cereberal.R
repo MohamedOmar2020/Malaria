@@ -72,7 +72,7 @@ ktspPredictorRes <- SWAP.Train.KTSP(
 
 ktspPredictorRes
 
-#save(ktspPredictorRes, file = "./Objs/KTSP_Model_Cerebral.rda")
+save(ktspPredictorRes, file = "./Objs/KTSP_Model_Cerebral.rda")
 load("./Objs/KTSP_Model_Cerebral.rda")
 
 ###########################################################################

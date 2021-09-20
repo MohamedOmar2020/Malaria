@@ -43,13 +43,13 @@ load("./Objs/WestNile1_Curves.rda")
 load("./Objs/Meningitis_Curves_severe.rda")
 
 #############################################
-ROC_Dengue$labels$title <- "GSE51808 (DF vs healthy)"
+ROC_Dengue$labels$title <- "GSE51808 (DF vs healthy)" #
 ROC_Dengue$theme$plot.title$size <- 6
 
-ROC_Dengue2$labels$title <- "GSE96656 (DF vs healthy)"
+ROC_Dengue2$labels$title <- "GSE96656 (DF vs healthy)" #
 ROC_Dengue2$theme$plot.title$size <- 6
 
-ROC_Dengue3$labels$title <- "GSE25001 (un-complicated vs complicated DF)"  
+ROC_Dengue3$labels$title <- "GSE25001 (un-complicated vs complicated DF)"  #
 ROC_Dengue3$theme$plot.title$size <- 5
 
 ROC_Dengue4$labels$title <- "GSE18090 (DF vs healthy)"

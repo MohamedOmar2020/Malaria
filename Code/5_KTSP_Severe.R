@@ -143,7 +143,7 @@ ktspPredictorRes <- SWAP.Train.KTSP(
 
 ktspPredictorRes
 
-#save(ktspPredictorRes, file = "./Objs/KTSP_Model_Complicated.rda")
+save(ktspPredictorRes, file = "./Objs/KTSP_Model_Severe.rda")
 #load("./Objs/KTSP_Model_Complicated.rda")
 
 ###########################################################################
